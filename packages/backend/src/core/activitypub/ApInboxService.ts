@@ -28,6 +28,7 @@ import type { UsersRepository, NotesRepository, FollowingsRepository, AbuseUserR
 import { bindThis } from '@/decorators.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import { getApHrefNullable, getApId, getApIds, getApType, isAccept, isActor, isAdd, isAnnounce, isBlock, isCollection, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost } from './type.js';
+import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ApNoteService } from './models/ApNoteService.js';
 import { ApLoggerService } from './ApLoggerService.js';
 import { ApDbResolverService } from './ApDbResolverService.js';
@@ -36,7 +37,6 @@ import { ApAudienceService } from './ApAudienceService.js';
 import { ApPersonService } from './models/ApPersonService.js';
 import { ApQuestionService } from './models/ApQuestionService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
 import type { Resolver } from './ApResolverService.js';
 import type { IAccept, IAdd, IAnnounce, IBlock, ICreate, IDelete, IFlag, IFollow, ILike, IObject, IReject, IRemove, IUndo, IUpdate, IMove } from './type.js';
 
@@ -277,11 +277,14 @@ export class ApInboxService {
 		const meta = await this.metaService.fetch();
 		if (this.utilityService.isBlockedHost(meta.blockedHosts, this.utilityService.extractDbHost(uri))) return;
 
+		const relays = await this.relayService.getAcceptedRelays();
+		const fromRelay = !!actor.inbox && relays.map(r => r.inbox).includes(actor.inbox);
+
 		const unlock = await this.appLockService.getApLock(uri);
 
 		try {
 			// 既に同じURIを持つものが登録されていないかチェック
-			const exist = await this.apNoteService.fetchNote(uri);
+			const exist = await this.apNoteService.fetchNote(fromRelay ? targetUri : uri);
 			if (exist) {
 				return;
 			}
@@ -306,6 +309,12 @@ export class ApInboxService {
 
 			if (!await this.noteEntityService.isVisibleForMe(renote, actor.id)) {
 				this.logger.warn('skip: invalid actor for this activity');
+				return;
+			}
+
+			if (fromRelay) {
+				const noteObj = await this.noteEntityService.pack(renote);
+				this.globalEventService.publishNotesStream(noteObj);
 				return;
 			}
 
