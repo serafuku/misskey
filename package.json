@@ -1,10 +1,10 @@
 {
 	"name": "misskey",
-	"version": "2024.5.0",
+	"version": "2024.5.0+serafuku",
 	"codename": "nasubi",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/misskey-dev/misskey.git"
+		"url": "https://github.com/serafuku/misskey.git"
 	},
 	"packageManager": "pnpm@9.0.6",
 	"workspaces": [
