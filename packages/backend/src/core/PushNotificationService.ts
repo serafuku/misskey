@@ -14,6 +14,8 @@ import type { MiMeta, MiSwSubscription, SwSubscriptionsRepository } from '@/mode
 import { bindThis } from '@/decorators.js';
 import { RedisKVCache } from '@/misc/cache.js';
 
+import Logger from '@/logger.js';
+
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
 	'notification': Packed<'Notification'>;
@@ -49,6 +51,7 @@ function truncateBody<T extends keyof PushNotificationsTypes>(type: T, body: Pus
 @Injectable()
 export class PushNotificationService implements OnApplicationShutdown {
 	private subscriptionsCache: RedisKVCache<MiSwSubscription[]>;
+	private swLogger: Logger;
 
 	constructor(
 		@Inject(DI.config)
@@ -70,6 +73,7 @@ export class PushNotificationService implements OnApplicationShutdown {
 			toRedisConverter: (value) => JSON.stringify(value),
 			fromRedisConverter: (value) => JSON.parse(value),
 		});
+		this.swLogger = new Logger('pushService');
 	}
 
 	@bindThis
@@ -86,7 +90,9 @@ export class PushNotificationService implements OnApplicationShutdown {
 		for (const subscription of subscriptions) {
 			if ([
 				'readAllNotifications',
-			].includes(type) && !subscription.sendReadMessage) continue;
+			].includes(type) && !subscription.sendReadMessage) {
+				continue;
+			}
 
 			const pushSubscription = {
 				endpoint: subscription.endpoint,
@@ -95,6 +101,8 @@ export class PushNotificationService implements OnApplicationShutdown {
 					p256dh: subscription.publickey,
 				},
 			};
+
+			this.swLogger.info(`Sending push to User: ${userId} Subscription: ${JSON.stringify(pushSubscription)} `);
 
 			push.sendNotification(pushSubscription, JSON.stringify({
 				type,
@@ -117,6 +125,11 @@ export class PushNotificationService implements OnApplicationShutdown {
 					}).then(() => {
 						this.refreshCache(userId);
 					});
+					this.swLogger.warn('Got 410, Delete Subscription');
+				} else {
+					this.swLogger.warn('Error code' + err.statusCode);
+					this.swLogger.warn(err.headers);
+					this.swLogger.warn(err.body);
 				}
 			});
 		}
