@@ -311,12 +311,17 @@ export class ApInboxService {
 		// アナウンス先が許可されているかチェック
 		if (!this.utilityService.isFederationAllowedUri(uri)) return;
 
+		const relays = await this.relayService.getAcceptedRelays();
+		const fromRelay = !!actor.inbox && relays.map(r => r.inbox).includes(actor.inbox);
+		const targetUri = getApId(activity.object);
+
 		const unlock = await this.appLockService.getApLock(uri);
 
 		try {
 			// 既に同じURIを持つものが登録されていないかチェック
-			const exist = await this.apNoteService.fetchNote(uri);
+			const exist = await this.apNoteService.fetchNote(fromRelay ? targetUri : uri);
 			if (exist) {
+				this.logger.info(`Skip existing Note announce (fromRelay: ${fromRelay}, uri:${ fromRelay ? targetUri : uri})`);
 				return;
 			}
 
@@ -338,6 +343,12 @@ export class ApInboxService {
 
 			if (!await this.noteEntityService.isVisibleForMe(renote, actor.id)) {
 				return 'skip: invalid actor for this activity';
+			}
+
+			if (fromRelay) {
+				const noteObj = await this.noteEntityService.pack(renote, null, { skipHide: true });
+				this.globalEventService.publishNotesStream(noteObj);
+				return;
 			}
 
 			this.logger.info(`Creating the (Re)Note: ${uri}`);
