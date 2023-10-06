@@ -29,3 +29,6 @@ fluent-emojis/
 .idea/
 packages/*/.vscode/
 packages/backend/test/docker-compose.yml
+
+#Meilisearch Data
+meili_data/
