@@ -6,6 +6,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+@font-face {
+	font-family: 'Gyeonggi_Title_serafuku';
+	src: url('https://static.serafuku.moe/font/GyeonggiTitle-sera.woff') format('woff');
+	font-weight: 300;
+	font-style: normal;
+}
+
 :root {
 	--MI-radius: 12px;
 	--MI-marginFull: 16px;
@@ -25,7 +32,7 @@
 html {
 	overflow: auto;
 	overflow-wrap: break-word;
-	font-family: 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	font-family: Gyeonggi_Title_serafuku, Roboto, HelveticaNeue, cursive, sans-serif;
 	font-size: 14px;
 	line-height: 1.35;
 	text-size-adjust: 100%;
