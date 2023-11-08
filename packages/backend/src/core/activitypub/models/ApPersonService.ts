@@ -48,6 +48,7 @@ import type { ApLoggerService } from '../ApLoggerService.js';
 
 import type { ApImageService } from './ApImageService.js';
 import type { IActor, ICollection, IObject, IOrderedCollection } from '../type.js';
+import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 
 const nameLength = 128;
 const summaryLength = 2048;
@@ -104,6 +105,8 @@ export class ApPersonService implements OnModuleInit {
 		private followingsRepository: FollowingsRepository,
 
 		private roleService: RoleService,
+
+		private avatarDecorationService: AvatarDecorationService,
 	) {
 	}
 
@@ -423,6 +426,8 @@ export class ApPersonService implements OnModuleInit {
 		// ハッシュタグ更新
 		this.hashtagService.updateUsertags(user, tags);
 
+		this.avatarDecorationService.remoteUserUpdate(user);
+
 		//#region アバターとヘッダー画像をフェッチ
 		try {
 			const updates = await this.resolveAvatarAndBanner(user, person.icon, person.image);
@@ -548,6 +553,8 @@ export class ApPersonService implements OnModuleInit {
 		if (moving) updates.movedAt = new Date();
 
 		// Update user
+		const user = await this.usersRepository.findOneByOrFail({ id: exist.id });
+		await this.avatarDecorationService.remoteUserUpdate(user);
 		await this.usersRepository.update(exist.id, updates);
 
 		if (person.publicKey) {
