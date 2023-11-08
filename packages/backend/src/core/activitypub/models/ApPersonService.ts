@@ -38,6 +38,7 @@ import { RoleService } from '@/core/RoleService.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import type { AccountMoveService } from '@/core/AccountMoveService.js';
 import { checkHttps } from '@/misc/check-https.js';
+import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 import { getApId, getApType, getOneApHrefNullable, isActor, isCollection, isCollectionOrOrderedCollection, isPropertyValue } from '../type.js';
 import { extractApHashtags } from './tag.js';
 import type { OnModuleInit } from '@nestjs/common';
@@ -104,6 +105,8 @@ export class ApPersonService implements OnModuleInit {
 		private followingsRepository: FollowingsRepository,
 
 		private roleService: RoleService,
+
+		private avatarDecorationService: AvatarDecorationService,
 	) {
 	}
 
@@ -459,6 +462,8 @@ export class ApPersonService implements OnModuleInit {
 		// ハッシュタグ更新
 		this.hashtagService.updateUsertags(user, tags);
 
+		this.avatarDecorationService.remoteUserUpdate(user);
+
 		//#region アバターとヘッダー画像をフェッチ
 		try {
 			const updates = await this.resolveAvatarAndBanner(user, person.icon, person.image);
@@ -597,6 +602,12 @@ export class ApPersonService implements OnModuleInit {
 		if (!(await this.usersRepository.update({ id: exist.id, isDeleted: false }, updates)).affected) {
 			return 'skip';
 		}
+
+		const user = await this.usersRepository.findOneBy({ id: exist.id, isDeleted: false });
+		if (!user) {
+			return 'skip';
+		}
+		await this.avatarDecorationService.remoteUserUpdate(user);
 
 		if (person.publicKey) {
 			await this.userPublickeysRepository.update({ userId: exist.id }, {
