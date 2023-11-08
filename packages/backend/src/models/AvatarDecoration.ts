@@ -41,4 +41,14 @@ export class MiAvatarDecoration {
 		length: 128, nullable: true,
 	})
 	public category: string | null;
+
+	@Column('varchar', {
+		length: 32,
+	})
+	public remoteId: string;
+
+	@Column('varchar', {
+		length: 128, nullable: true,
+	})
+	public host: string | null;
 }
