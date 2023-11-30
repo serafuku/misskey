@@ -21,6 +21,7 @@ import {IsNull} from "typeorm";
 @Injectable()
 export class AvatarDecorationService implements OnApplicationShutdown {
 	public cache: MemorySingleCache<MiAvatarDecoration[]>;
+	public cacheWithRemote: MemorySingleCache<MiAvatarDecoration[]>;
 
 	constructor(
 		@Inject(DI.config)
@@ -44,6 +45,7 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		private httpRequestService: HttpRequestService,
 	) {
 		this.cache = new MemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30);
+		this.cacheWithRemote = new MemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30);
 
 		this.redisForSub.on('message', this.onMessage);
 	}
@@ -177,8 +179,10 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		};
 		if (existingDecoration == null) {
 			await this.create(decorationData);
+			this.cacheWithRemote.delete();
 		} else {
 			await this.update(existingDecoration.id, decorationData);
+			this.cacheWithRemote.delete();
 		}
 		const findDecoration = await this.avatarDecorationsRepository.findOneBy({
 			host: userHost,
@@ -212,11 +216,12 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 	public async getAll(noCache = false, withRemote = false): Promise<MiAvatarDecoration[]> {
 		if (noCache) {
 			this.cache.delete();
+			this.cacheWithRemote.delete();
 		}
 		if (!withRemote) {
 			return this.cache.fetch(() => this.avatarDecorationsRepository.find({ where: { host: IsNull() } }));
 		} else {
-			return this.cache.fetch(() => this.avatarDecorationsRepository.find());
+			return this.cacheWithRemote.fetch(() => this.avatarDecorationsRepository.find());
 		}
 	}
 
