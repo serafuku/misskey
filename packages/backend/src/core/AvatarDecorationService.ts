@@ -139,16 +139,15 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		});
 
 		const userData: any = await res.json();
-		const avatarDecorations = userData.avatarDecorations?.[0];
+		const userAvatarDecorations = userData.avatarDecorations ?? undefined;
 
-		if (!avatarDecorations) {
+		if (!userAvatarDecorations || userAvatarDecorations.length === 0) {
 			const updates = {} as Partial<MiUser>;
 			updates.avatarDecorations = [];
 			await this.usersRepository.update({id: user.id}, updates);
 			return;
 		}
 
-		const avatarDecorationId = avatarDecorations.id;
 		const instanceHost = instance?.host;
 		const decorationApiUrl = `https://${instanceHost}/api/get-avatar-decorations`;
 		const allRes = await this.httpRequestService.send(decorationApiUrl, {
@@ -157,45 +156,50 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 			body: JSON.stringify({}),
 		});
 		const allDecorations: any = await allRes.json();
-		let name;
-		let description;
-		for (const decoration of allDecorations) {
-			if (decoration.id == avatarDecorationId) {
-				name = decoration.name;
-				description = decoration.description;
-				break;
-			}
-		}
-		const existingDecoration = await this.avatarDecorationsRepository.findOneBy({
-			host: userHost,
-			remoteId: avatarDecorationId
-		});
-		const decorationData = {
-			name: name,
-			description: description,
-			url: this.getProxiedUrl(avatarDecorations.url, 'static'),
-			remoteId: avatarDecorationId,
-			host: userHost,
-		};
-		if (existingDecoration == null) {
-			await this.create(decorationData);
-			this.cacheWithRemote.delete();
-		} else {
-			await this.update(existingDecoration.id, decorationData);
-			this.cacheWithRemote.delete();
-		}
-		const findDecoration = await this.avatarDecorationsRepository.findOneBy({
-			host: userHost,
-			remoteId: avatarDecorationId
-		});
 		const updates = {} as Partial<MiUser>;
-		updates.avatarDecorations = [{
-			id: findDecoration?.id ?? '',
-			angle: avatarDecorations.angle ?? 0,
-			flipH: avatarDecorations.flipH ?? false,
-			offsetX: avatarDecorations.offsetX ?? 0,
-			offsetY: avatarDecorations.offsetY ?? 0,
-		}];
+		updates.avatarDecorations = [];
+		for (const avatarDecoration of userAvatarDecorations) {
+			let name;
+			let description;
+			const avatarDecorationId = avatarDecoration.id
+			for (const decoration of allDecorations) {
+				if (decoration.id == avatarDecorationId) {
+					name = decoration.name;
+					description = decoration.description;
+					break;
+				}
+			}
+			const existingDecoration = await this.avatarDecorationsRepository.findOneBy({
+				host: userHost,
+				remoteId: avatarDecorationId
+			});
+			const decorationData = {
+				name: name,
+				description: description,
+				url: this.getProxiedUrl(avatarDecoration.url, 'static'),
+				remoteId: avatarDecorationId,
+				host: userHost,
+			};
+			if (existingDecoration == null) {
+				await this.create(decorationData);
+				this.cacheWithRemote.delete();
+			} else {
+				await this.update(existingDecoration.id, decorationData);
+				this.cacheWithRemote.delete();
+			}
+			const findDecoration = await this.avatarDecorationsRepository.findOneBy({
+				host: userHost,
+				remoteId: avatarDecorationId
+			});
+
+			updates.avatarDecorations.push({
+				id: findDecoration?.id ?? '',
+				angle: avatarDecoration.angle ?? 0,
+				flipH: avatarDecoration.flipH ?? false,
+				offsetX: avatarDecoration.offsetX ?? 0,
+				offsetY: avatarDecoration.offsetY ?? 0,
+			});
+		}
 		await this.usersRepository.update({id: user.id}, updates);
 	}
 
