@@ -193,6 +193,8 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 			id: findDecoration?.id ?? '',
 			angle: avatarDecorations.angle ?? 0,
 			flipH: avatarDecorations.flipH ?? false,
+			offsetX: avatarDecorations.offsetX ?? 0,
+			offsetY: avatarDecorations.offsetY ?? 0,
 		}];
 		await this.usersRepository.update({id: user.id}, updates);
 	}
