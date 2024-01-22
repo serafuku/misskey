@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Not, IsNull } from 'typeorm';
-import type { FollowingsRepository } from '@/models/_.js';
+import type { UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import { QueueService } from '@/core/QueueService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -17,9 +17,8 @@ import { bindThis } from '@/decorators.js';
 @Injectable()
 export class UserSuspendService {
 	constructor(
-		@Inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
-
+		@Inject(DI.usersRepository)
+		private usersRepository: UsersRepository,
 		private userEntityService: UserEntityService,
 		private queueService: QueueService,
 		private globalEventService: GlobalEventService,
@@ -37,18 +36,14 @@ export class UserSuspendService {
 
 			const queue: string[] = [];
 
-			const followings = await this.followingsRepository.find({
-				where: [
-					{ followerSharedInbox: Not(IsNull()) },
-					{ followeeSharedInbox: Not(IsNull()) },
-				],
-				select: ['followerSharedInbox', 'followeeSharedInbox'],
-			});
-
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
+			const inboxes = await this.usersRepository.createQueryBuilder('user')
+				.select('user.sharedInbox')
+				.distinctOn(['user.sharedInbox'])
+				.where('user.sharedInbox IS NOT NULL')
+				.getMany();
 
 			for (const inbox of inboxes) {
-				if (inbox != null && !queue.includes(inbox)) queue.push(inbox);
+				if (inbox.sharedInbox != null) queue.push(inbox.sharedInbox);
 			}
 
 			for (const inbox of queue) {
@@ -67,18 +62,14 @@ export class UserSuspendService {
 
 			const queue: string[] = [];
 
-			const followings = await this.followingsRepository.find({
-				where: [
-					{ followerSharedInbox: Not(IsNull()) },
-					{ followeeSharedInbox: Not(IsNull()) },
-				],
-				select: ['followerSharedInbox', 'followeeSharedInbox'],
-			});
-
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
+			const inboxes = await this.usersRepository.createQueryBuilder('user')
+				.select('user.sharedInbox')
+				.distinctOn(['user.sharedInbox'])
+				.where('user.sharedInbox IS NOT NULL')
+				.getMany();
 
 			for (const inbox of inboxes) {
-				if (inbox != null && !queue.includes(inbox)) queue.push(inbox);
+				if (inbox.sharedInbox != null) queue.push(inbox.sharedInbox);
 			}
 
 			for (const inbox of queue) {
