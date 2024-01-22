@@ -88,18 +88,14 @@ export class UserSuspendService {
 
 			const queue: string[] = [];
 
-			const followings = await this.followingsRepository.find({
-				where: [
-					{ followerSharedInbox: Not(IsNull()) },
-					{ followeeSharedInbox: Not(IsNull()) },
-				],
-				select: ['followerSharedInbox', 'followeeSharedInbox'],
-			});
-
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
+			const inboxes = await this.usersRepository.createQueryBuilder('user')
+				.select('user.sharedInbox')
+				.distinctOn(['user.sharedInbox'])
+				.where('user.sharedInbox IS NOT NULL')
+				.getMany();
 
 			for (const inbox of inboxes) {
-				if (inbox != null && !queue.includes(inbox)) queue.push(inbox);
+				if (inbox.sharedInbox != null) queue.push(inbox.sharedInbox);
 			}
 
 			for (const inbox of queue) {
@@ -118,18 +114,14 @@ export class UserSuspendService {
 
 			const queue: string[] = [];
 
-			const followings = await this.followingsRepository.find({
-				where: [
-					{ followerSharedInbox: Not(IsNull()) },
-					{ followeeSharedInbox: Not(IsNull()) },
-				],
-				select: ['followerSharedInbox', 'followeeSharedInbox'],
-			});
-
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
+			const inboxes = await this.usersRepository.createQueryBuilder('user')
+				.select('user.sharedInbox')
+				.distinctOn(['user.sharedInbox'])
+				.where('user.sharedInbox IS NOT NULL')
+				.getMany();
 
 			for (const inbox of inboxes) {
-				if (inbox != null && !queue.includes(inbox)) queue.push(inbox);
+				if (inbox.sharedInbox != null) queue.push(inbox.sharedInbox);
 			}
 
 			for (const inbox of queue) {
