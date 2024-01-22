@@ -3,18 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Not, IsNull } from 'typeorm';
-import type { FollowingsRepository, FollowRequestsRepository, UsersRepository } from '@/models/_.js';
-import type { MiUser } from '@/models/User.js';
-import { QueueService } from '@/core/QueueService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
-import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { bindThis } from '@/decorators.js';
-import { RelationshipJobData } from '@/queue/types.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Not, IsNull } from "typeorm";
+import type {
+	FollowingsRepository,
+	FollowRequestsRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import type { MiUser } from "@/models/User.js";
+import { QueueService } from "@/core/QueueService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
+import { ApRendererService } from "@/core/activitypub/ApRendererService.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { bindThis } from "@/decorators.js";
+import { RelationshipJobData } from "@/queue/types.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
 
 @Injectable()
 export class UserSuspendService {
@@ -33,8 +37,7 @@ export class UserSuspendService {
 		private globalEventService: GlobalEventService,
 		private apRendererService: ApRendererService,
 		private moderationLogService: ModerationLogService,
-	) {
-	}
+	) {}
 
 	@bindThis
 	public async suspend(user: MiUser, moderator: MiUser): Promise<void> {
@@ -42,15 +45,15 @@ export class UserSuspendService {
 			isSuspended: true,
 		});
 
-		this.moderationLogService.log(moderator, 'suspend', {
+		this.moderationLogService.log(moderator, "suspend", {
 			userId: user.id,
 			userUsername: user.username,
 			userHost: user.host,
 		});
 
 		(async () => {
-			await this.postSuspend(user).catch(_ => {});
-			await this.unFollowAll(user).catch(_ => {});
+			await this.postSuspend(user).catch((_) => {});
+			await this.unFollowAll(user).catch((_) => {});
 		})();
 	}
 
@@ -60,20 +63,26 @@ export class UserSuspendService {
 			isSuspended: false,
 		});
 
-		this.moderationLogService.log(moderator, 'unsuspend', {
+		this.moderationLogService.log(moderator, "unsuspend", {
 			userId: user.id,
 			userUsername: user.username,
 			userHost: user.host,
 		});
 
 		(async () => {
-			await this.postUnsuspend(user).catch(_ => {});
+			await this.postUnsuspend(user).catch((_) => {});
 		})();
 	}
 
 	@bindThis
-	private async postSuspend(user: { id: MiUser['id']; host: MiUser['host'] }): Promise<void> {
-		this.globalEventService.publishInternalEvent('userChangeSuspendedState', { id: user.id, isSuspended: true });
+	private async postSuspend(user: {
+		id: MiUser["id"];
+		host: MiUser["host"];
+	}): Promise<void> {
+		this.globalEventService.publishInternalEvent("userChangeSuspendedState", {
+			id: user.id,
+			isSuspended: true,
+		});
 
 		this.followRequestsRepository.delete({
 			followeeId: user.id,
@@ -84,25 +93,20 @@ export class UserSuspendService {
 
 		if (this.userEntityService.isLocalUser(user)) {
 			// 知り得る全SharedInboxにDelete配信
-			const content = this.apRendererService.addContext(this.apRendererService.renderDelete(this.userEntityService.genLocalUserUri(user.id), user));
+			const content = this.apRendererService.addContext(
+				this.apRendererService.renderDelete(
+					this.userEntityService.genLocalUserUri(user.id),
+					user,
+				),
+			);
 
 			const queue: string[] = [];
 
-			const followings = await this.followingsRepository.find({
-				where: [
-					{ followerSharedInbox: Not(IsNull()) },
-					{ followeeSharedInbox: Not(IsNull()) },
-				],
-				select: {
-					followerSharedInbox: true,
-					followeeSharedInbox: true,
-				},
-			});
-
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
-
+			const inboxes = await this.usersRepository.query(
+				'SELECT DISTINCT "sharedInbox" from "user" AS U INNER JOIN instance AS I ON U.host = I.host WHERE (I."followersCount" > 0 OR I."followingCount" > 0)',
+			);
 			for (const inbox of inboxes) {
-				if (inbox != null && !queue.includes(inbox)) queue.push(inbox);
+				if (inbox.sharedInbox != null) queue.push(inbox.sharedInbox);
 			}
 
 			for (const inbox of queue) {
@@ -113,29 +117,30 @@ export class UserSuspendService {
 
 	@bindThis
 	private async postUnsuspend(user: MiUser): Promise<void> {
-		this.globalEventService.publishInternalEvent('userChangeSuspendedState', { id: user.id, isSuspended: false });
+		this.globalEventService.publishInternalEvent("userChangeSuspendedState", {
+			id: user.id,
+			isSuspended: false,
+		});
 
 		if (this.userEntityService.isLocalUser(user)) {
 			// 知り得る全SharedInboxにUndo Delete配信
-			const content = this.apRendererService.addContext(this.apRendererService.renderUndo(this.apRendererService.renderDelete(this.userEntityService.genLocalUserUri(user.id), user), user));
+			const content = this.apRendererService.addContext(
+				this.apRendererService.renderUndo(
+					this.apRendererService.renderDelete(
+						this.userEntityService.genLocalUserUri(user.id),
+						user,
+					),
+					user,
+				),
+			);
 
 			const queue: string[] = [];
-
-			const followings = await this.followingsRepository.find({
-				where: [
-					{ followerSharedInbox: Not(IsNull()) },
-					{ followeeSharedInbox: Not(IsNull()) },
-				],
-				select: {
-					followerSharedInbox: true,
-					followeeSharedInbox: true,
-				},
-			});
-
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
+			const inboxes = await this.usersRepository.query(
+				'SELECT DISTINCT "sharedInbox" from "user" AS U INNER JOIN instance AS I ON U.host = I.host WHERE (I."followersCount" > 0 OR I."followingCount" > 0)',
+			);
 
 			for (const inbox of inboxes) {
-				if (inbox != null && !queue.includes(inbox)) queue.push(inbox);
+				if (inbox.sharedInbox != null) queue.push(inbox.sharedInbox);
 			}
 
 			for (const inbox of queue) {
