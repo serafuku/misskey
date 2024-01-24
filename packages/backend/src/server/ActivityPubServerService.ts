@@ -481,6 +481,8 @@ export class ActivityPubServerService {
 
 	@bindThis
 	private async userInfo(request: FastifyRequest, reply: FastifyReply, user: MiUser | null) {
+		vary(reply.raw, 'Accept');
+
 		if (user == null) {
 			reply.code(404);
 			return;

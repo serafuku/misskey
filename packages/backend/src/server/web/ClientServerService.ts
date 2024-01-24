@@ -469,6 +469,8 @@ export class ClientServerService {
 		//#region SSR (for crawlers)
 		// User
 		fastify.get<{ Params: { user: string; sub?: string; } }>('/@:user/:sub?', async (request, reply) => {
+			vary(reply.raw, 'Accept');
+
 			const { username, host } = Acct.parse(request.params.user);
 			const user = await this.usersRepository.findOneBy({
 				usernameLower: username.toLowerCase(),
@@ -504,6 +506,8 @@ export class ClientServerService {
 		});
 
 		fastify.get<{ Params: { user: string; } }>('/users/:user', async (request, reply) => {
+			vary(reply.raw, 'Accept');
+
 			const user = await this.usersRepository.findOneBy({
 				id: request.params.user,
 				host: IsNull(),
