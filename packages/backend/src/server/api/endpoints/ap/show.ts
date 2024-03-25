@@ -20,6 +20,8 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { ApiError } from '../../error.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import type Logger from '@/logger.js';
 
 export const meta = {
 	tags: ['federation'],
@@ -87,6 +89,8 @@ export const paramDef = {
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+	private logger: Logger;
+
 	constructor(
 		private utilityService: UtilityService,
 		private userEntityService: UserEntityService,
@@ -96,6 +100,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private apDbResolverService: ApDbResolverService,
 		private apPersonService: ApPersonService,
 		private apNoteService: ApNoteService,
+		private loggerService: LoggerService
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const object = await this.fetchAny(ps.uri, me);
@@ -105,6 +110,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchObject);
 			}
 		});
+		this.logger = this.loggerService.getLogger('ap/show');
 	}
 
 	/***
@@ -124,6 +130,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		// リモートから一旦オブジェクトフェッチ
 		const resolver = this.apResolverService.createResolver();
+		if(me){
+			this.logger.info(`Set signed GET User to ${me.username}`);
+			resolver.setSignUser(me);
+		}
 		const object = await resolver.resolve(uri) as any;
 
 		// /@user のような正規id以外で取得できるURIが指定されていた場合、ここで初めて正規URIが確定する
