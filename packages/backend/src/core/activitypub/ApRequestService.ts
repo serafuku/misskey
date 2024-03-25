@@ -182,7 +182,7 @@ export class ApRequestService {
 	@bindThis
 	public async signedGet(url: string, user: { id: MiUser['id'] }): Promise<unknown> {
 		const keypair = await this.userKeypairService.getUserKeypair(user.id);
-
+		this.logger.info(`Signing GET with user(id): ${user.id}`);
 		const req = ApRequestCreator.createSignedGet({
 			key: {
 				privateKeyPem: keypair.privateKey,
