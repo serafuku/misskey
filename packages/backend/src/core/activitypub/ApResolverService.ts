@@ -48,6 +48,11 @@ export class Resolver {
 	}
 
 	@bindThis
+	public setSignUser(user:MiLocalUser) {
+		this.user = user;
+	}
+
+	@bindThis
 	public getHistory(): string[] {
 		return Array.from(this.history);
 	}
