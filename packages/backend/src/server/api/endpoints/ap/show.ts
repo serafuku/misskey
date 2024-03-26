@@ -149,7 +149,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		return await this.mergePack(
 			me,
 			isActor(object) ? await this.apPersonService.createPerson(getApId(object)) : null,
-			isPost(object) ? await this.apNoteService.createNote(getApId(object), undefined, true) : null,
+			isPost(object) ? await this.apNoteService.createNote(getApId(object), resolver, true) : null,
 		);
 	}
 
