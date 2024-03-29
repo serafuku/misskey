@@ -18,9 +18,9 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
-import { ApiError } from '../../error.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
+import { ApiError } from '../../error.js';
 
 export const meta = {
 	tags: ['federation'],
@@ -98,7 +98,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private apDbResolverService: ApDbResolverService,
 		private apPersonService: ApPersonService,
 		private apNoteService: ApNoteService,
-		private loggerService: LoggerService
+		private loggerService: LoggerService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const object = await this.fetchAny(ps.uri, me);
@@ -126,7 +126,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		// リモートから一旦オブジェクトフェッチ
 		const resolver = this.apResolverService.createResolver();
-		if(me){
+		if (me) {
 			this.logger.info(`Set signed GET User to ${me.username}`);
 			resolver.setSignUser(me);
 		}
@@ -142,6 +142,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (local != null) return local;
 		}
 
+		resolver.clearHistory();
 		return await this.mergePack(
 			me,
 			isActor(object) ? await this.apPersonService.createPerson(getApId(object)) : null,
