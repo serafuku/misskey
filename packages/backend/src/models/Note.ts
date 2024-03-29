@@ -24,7 +24,7 @@ export class MiNote {
 	public replyId: MiNote['id'] | null;
 
 	@ManyToOne(type => MiNote, {
-		onDelete: 'CASCADE',
+		onDelete: 'SET NULL',
 	})
 	@JoinColumn()
 	public reply: MiNote | null;
