@@ -53,6 +53,11 @@ export class Resolver {
 	}
 
 	@bindThis
+	public clearHistory() {
+		this.history.clear();
+	}
+
+	@bindThis
 	public getHistory(): string[] {
 		return Array.from(this.history);
 	}
