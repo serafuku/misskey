@@ -5,6 +5,10 @@ on:
     branches:
       - munochi-dev
   workflow_dispatch:
+permissions:
+  packages: write
+  contents: read
+  id-token: write
 
 env:
   IMAGE_NAME: ${{ github.repository }}
