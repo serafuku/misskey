@@ -2953,8 +2953,7 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
-     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
-     * **Credential required**: *Yes*
+     * **Credential required**: *Yes* / **Permission**: *read:account*
      */
     request<E extends 'i/revoke-token', P extends Endpoints[E]['req']>(
       endpoint: E,
