@@ -11,7 +11,9 @@ import { DI } from '@/di-symbols.js';
 export const meta = {
 	requireCredential: true,
 
-	secure: true,
+	secure: false,
+	tags: ['account'],
+	kind: 'read:account',
 } as const;
 
 export const paramDef = {
