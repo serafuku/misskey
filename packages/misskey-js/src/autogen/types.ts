@@ -2567,8 +2567,7 @@ export type paths = {
      * i/revoke-token
      * @description No description provided.
      *
-     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
-     * **Credential required**: *Yes*
+     * **Credential required**: *Yes* / **Permission**: *read:account*
      */
     post: operations['i___revoke-token'];
   };
@@ -20801,8 +20800,7 @@ export type operations = {
    * i/revoke-token
    * @description No description provided.
    *
-   * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
-   * **Credential required**: *Yes*
+   * **Credential required**: *Yes* / **Permission**: *read:account*
    */
   'i___revoke-token': {
     requestBody: {
