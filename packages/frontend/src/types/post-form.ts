@@ -6,6 +6,7 @@
 import * as Misskey from 'misskey-js';
 
 export interface PostFormProps {
+	updateMode?: boolean;
 	reply?: Misskey.entities.Note | null;
 	renote?: Misskey.entities.Note | null;
 	channel?: {

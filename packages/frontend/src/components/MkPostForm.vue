@@ -158,6 +158,7 @@ import { checkDragDataType, getDragData } from '@/drag-and-drop.js';
 import { useUploader } from '@/composables/use-uploader.js';
 import { startTour } from '@/utility/tour.js';
 import { closeTip } from '@/tips.js';
+import { noteEvents } from '@/composables/use-note-capture';
 
 const $i = ensureSignin();
 
@@ -165,6 +166,7 @@ const props = withDefaults(defineProps<PostFormProps & {
 	fixed?: boolean;
 	autofocus?: boolean;
 	freezeAfterPosted?: boolean;
+	updateMode?: boolean;
 	mock?: boolean;
 }>(), {
 	initialVisibleUsers: () => [],
@@ -865,6 +867,7 @@ type StoredDrafts = {
 	[key: string]: {
 		updatedAt: string;
 		data: {
+			noteId?: string;
 			text: string;
 			useCw: boolean;
 			cw: string | null;
@@ -899,6 +902,7 @@ function saveDraft() {
 			quoteId: quoteId.value,
 			reactionAcceptance: reactionAcceptance.value,
 			scheduledAt: scheduledAt.value,
+			noteId: props.updateMode ? props.initialNote?.id : undefined,
 		},
 	};
 
@@ -1031,6 +1035,7 @@ async function post(ev?: PointerEvent) {
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
 		reactionAcceptance: reactionAcceptance.value,
+		noteId: props.updateMode ? props.initialNote?.id : undefined,
 	};
 
 	if (withHashtags.value && hashtags.value && hashtags.value.trim() !== '') {
@@ -1077,14 +1082,16 @@ async function post(ev?: PointerEvent) {
 	}
 
 	posting.value = true;
-	misskeyApi('notes/create', postData, token).then((res) => {
+	misskeyApi(props.updateMode ? 'notes/update' : 'notes/create', postData, token).then((res) => {
 		if (props.freezeAfterPosted) {
 			posted.value = true;
 		} else {
 			clear();
 		}
 
-		globalEvents.emit('notePosted', res.createdNote);
+		if ('createdNote' in res) {
+			globalEvents.emit('notePosted', res.createdNote);
+		}
 
 		nextTick(() => {
 			deleteDraft();
@@ -1096,6 +1103,8 @@ async function post(ev?: PointerEvent) {
 			}
 			posting.value = false;
 			postAccount.value = null;
+
+			if (props.updateMode) return;
 
 			incNotesCount();
 			if (notesCount === 1) {

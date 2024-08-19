@@ -77,27 +77,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</header>
 			<div :class="$style.noteContent">
-				<p v-if="appearNote.cw != null" :class="$style.cw">
+				<p v-if="$appearNote.cw != null" :class="$style.cw">
 					<Mfm
-						v-if="appearNote.cw != ''"
-						:text="appearNote.cw"
+						v-if="$appearNote.cw != ''"
+						:text="$appearNote.cw ?? ''"
 						:author="appearNote.user"
 						:nyaize="'respect'"
 						:enableEmojiMenu="true"
 						:enableEmojiMenuReaction="true"
 					/>
-					<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll"/>
+					<MkCwButton v-model="showContent" :text="$appearNote.text" :renote="appearNote.renote" :files="$appearNote.files" :poll="$appearNote.poll"/>
 				</p>
-				<div v-show="appearNote.cw == null || showContent">
+				<div v-show="$appearNote.cw == null || showContent">
 					<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 					<MkA v-if="appearNote.replyId" :class="$style.noteReplyTarget" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
 					<Mfm
-						v-if="appearNote.text"
+						v-if="$appearNote.text"
 						:parsedNodes="parsed"
-						:text="appearNote.text"
+						:text="$appearNote.text"
 						:author="appearNote.user"
 						:nyaize="'respect'"
-						:emojiUrls="appearNote.emojis"
+						:emojiUrls="$appearNote.emojis"
 						:enableEmojiMenu="true"
 						:enableEmojiMenuReaction="true"
 						class="_selectable"
@@ -114,13 +114,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkMediaList ref="galleryEl" :mediaList="appearNote.files" :user="appearNote.user"/>
 					</div>
 					<MkPoll
-						v-if="appearNote.poll"
+						v-if="$appearNote.poll"
 						:noteId="appearNote.id"
-						:multiple="appearNote.poll.multiple"
-						:expiresAt="appearNote.poll.expiresAt"
+						:multiple="$appearNote.poll.multiple"
+						:expiresAt="$appearNote.poll.expiresAt"
 						:choices="$appearNote.pollChoices"
 						:author="appearNote.user"
-						:emojiUrls="appearNote.emojis"
+						:emojiUrls="$appearNote.emojis"
 						:class="$style.poll"
 					/>
 					<div v-if="isEnabledUrlPreview">
@@ -143,6 +143,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<i v-else-if="appearNote.visibility === 'specified'" ref="specified" class="ti ti-mail"></i>
 						<span style="margin-left: 0.3em;">{{ i18n.ts._visibility[appearNote.visibility] }}</span>
 					</span>
+				</div>
+				<div v-if="$appearNote.updatedAt" style="margin-top: 0; opacity: 0.7; font-size: 0.7em;">
+					<MkA :to="notePage(appearNote)">
+						{{ i18n.ts.updatedAt }}: <MkTime :time="$appearNote.updatedAt" mode="detail"/>
+					</MkA>
 				</div>
 				<MkReactionsViewer
 					v-if="appearNote.reactionAcceptance !== 'likeOnly'"
@@ -188,6 +193,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button class="_button" :class="[$style.tab, { [$style.tabActive]: tab === 'replies' }]" @click="tab = 'replies'"><i class="ti ti-arrow-back-up"></i> {{ i18n.ts.replies }}</button>
 			<button class="_button" :class="[$style.tab, { [$style.tabActive]: tab === 'renotes' }]" @click="tab = 'renotes'"><i class="ti ti-repeat"></i> {{ i18n.ts.renotes }}</button>
 			<button class="_button" :class="[$style.tab, { [$style.tabActive]: tab === 'reactions' }]" @click="tab = 'reactions'"><i class="ti ti-icons"></i> {{ i18n.ts.reactions }}</button>
+			<button v-if="appearNote.updatedAt" class="_button" :class="[$style.tab, { [$style.tabActive]: tab === 'history'}]" @click="tab = 'history'"> <i class="ti ti-history"></i> {{ i18n.ts.editHistory }} </button>
 		</div>
 		<div>
 			<div v-if="tab === 'replies'">
@@ -224,6 +230,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</MkPagination>
 			</div>
+			<div v-if="tab === 'history'">
+				<div v-if="!historiesLoaded" style="padding: 16px">
+					<MkButton style="margin: 0 auto;" primary rounded @click="loadHistories">{{ i18n.ts.loadMore }}</MkButton>
+				</div>
+				<MkSwitch v-if="historiesLoaded" v-model="history_raw" style="padding: 16px;">raw diff</MkSwitch>
+				<MkNoteHistorySub
+					v-for="(history, index) in histories"
+					:key="history.id"
+					:oldNote="histories[index+1] ? histories[index+1] : null"
+					:newNote="history"
+					:originalNote="appearNote"
+					:class="$style.reply"
+					:detail="true"
+					:raw="history_raw"
+					:index="index"
+				/>
+				<div v-if="historiesLoaded && !history_list_end" style="padding: 16px">
+					<MkButton style="margin: 0 auto;" primary rounded @click="loadHistories">{{ i18n.ts.loadMore }}</MkButton>
+				</div>
+			</div>
 		</div>
 	</template>
 </div>
@@ -241,6 +267,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { inject, provide, ref, useTemplateRef, markRaw, computed } from 'vue';
 import * as Misskey from 'misskey-js';
+import type { Keymap } from '@/utility/hotkey.js';
 import { useNote } from '@/composables/use-note.js';
 import { prefer } from '@/preferences.js';
 import { i18n } from '@/i18n.js';
@@ -251,9 +278,9 @@ import { Paginator } from '@/utility/paginator.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import number from '@/filters/number.js';
 import { DI } from '@/di.js';
-import type { Keymap } from '@/utility/hotkey.js';
 
 // コンポーネント外部の依存関係
+import MkNoteHistorySub from '@/components/MkNoteHistorySub.vue';
 import MkNoteSub from '@/components/MkNoteSub.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
@@ -266,10 +293,11 @@ import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import MkButton from '@/components/MkButton.vue';
+import MkSwitch from '@/components/MkSwitch.vue';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
-	initialTab?: 'replies' | 'renotes' | 'reactions';
+	initialTab?: 'replies' | 'renotes' | 'reactions' | 'history';
 }>(), {
 	initialTab: 'replies',
 });
@@ -285,6 +313,7 @@ const renoteTime = useTemplateRef('renoteTime');
 const reactButton = useTemplateRef('reactButton');
 const clipButton = useTemplateRef('clipButton');
 const galleryEl = useTemplateRef('galleryEl');
+const histories = ref<Misskey.entities.NoteHistory[]>([]);
 
 // コンポーサブルの呼び出し
 const {
@@ -358,6 +387,43 @@ function loadReplies() {
 		limit: 30,
 	}).then(res => {
 		replies.value = res;
+	});
+}
+
+const historiesLoaded = ref(false);
+const histories_untilId = ref<Misskey.entities.NoteHistory['id']>();
+const history_list_end = ref(false);
+const history_raw = ref(false);
+
+function loadHistories() {
+	historiesLoaded.value = true;
+	misskeyApi('notes/history', {
+		...(histories_untilId.value ? { untilId: histories_untilId.value } : {} ),
+		noteId: appearNote.id,
+		limit: 5,
+	}).then(res => {
+		if (histories.value.length === 0) {
+			const current_note = appearNote;
+			const current_version: Misskey.entities.NoteHistory = {
+				id: current_note.id,
+				noteId: current_note.id,
+				createdAt: current_note.createdAt,
+				updatedAt: current_note.createdAt,
+				userId: current_note.userId,
+				text: current_note.text,
+				fileIds: current_note.fileIds,
+				files: current_note.files,
+				visibility: current_note.visibility,
+				visibleUserIds: current_note.visibleUserIds,
+				emojis: current_note.emojis,
+			};
+			histories.value.push(current_version);
+		}
+		if (res.length < 5) {
+			history_list_end.value = true;
+		}
+		histories_untilId.value = res[ res.length - 1 ].id;
+		histories.value = histories.value.concat(res);
 	});
 }
 

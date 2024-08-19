@@ -20,16 +20,27 @@ export const noteEvents = new EventEmitter<{
 	[ev: `reacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; } | null; }) => void;
 	[ev: `unreacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; } | null; }) => void;
 	[ev: `pollVoted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; choice: number; }) => void;
+	[ev: `noteUpdated:${string}`]: (ctx: {
+		text: Misskey.entities.Note['text'];
+		files: Misskey.entities.Note['files'];
+		cw: Misskey.entities.Note['cw'];
+		poll: Misskey.entities.Note['poll'];
+		updatedAt: Misskey.entities.Note['updatedAt'];
+		emojis: Misskey.entities.Note['emojis'];
+	}) => void;
 }>();
 
 const fetchEvent = new EventEmitter<{
 	[id: string]: Pick<Misskey.entities.Note, 'reactions' | 'reactionEmojis'>;
 }>();
 
-const pollingQueue = new Map<string, {
-	referenceCount: number;
-	lastAddedAt: number;
-}>();
+const pollingQueue = new Map<
+	string,
+	{
+		referenceCount: number;
+		lastAddedAt: number;
+	}
+>();
 
 function pollingEnqueue(note: Pick<Misskey.entities.Note, 'id' | 'createdAt'>) {
 	if (pollingQueue.has(note.id)) {
@@ -64,15 +75,18 @@ function pollingDequeue(note: Pick<Misskey.entities.Note, 'id' | 'createdAt'>) {
 const CAPTURE_MAX = 30;
 const MIN_POLLING_INTERVAL = 1000 * 10;
 const POLLING_INTERVAL =
-	prefer.s.pollingInterval === 1 ? MIN_POLLING_INTERVAL * 1.5 * 1.5 :
-	prefer.s.pollingInterval === 2 ? MIN_POLLING_INTERVAL * 1.5 :
-	prefer.s.pollingInterval === 3 ? MIN_POLLING_INTERVAL :
-	MIN_POLLING_INTERVAL;
+	prefer.s.pollingInterval === 1
+		? MIN_POLLING_INTERVAL * 1.5 * 1.5
+		: prefer.s.pollingInterval === 2
+			? MIN_POLLING_INTERVAL * 1.5
+			: prefer.s.pollingInterval === 3
+				? MIN_POLLING_INTERVAL
+				: MIN_POLLING_INTERVAL;
 
 // documentが非表示の間はポーリングを停止する
 createVisibilityAwareInterval(() => {
 	const ids = [...pollingQueue.entries()]
-		.filter(([k, v]) => Date.now() - v.lastAddedAt < 1000 * 60 * 5) // 追加されてから一定時間経過したものは省く
+		.filter(([k, v]) => Date.now() - v.lastAddedAt < 1000 * 60 * 180) // 追加されてから一定時間経過したものは省く
 		.map(([k, v]) => k)
 		.sort((a, b) => (a > b ? -1 : 1)) // 新しいものを優先するためにIDで降順ソート
 		.slice(0, CAPTURE_MAX);
@@ -98,9 +112,14 @@ function pollingSubscribe(props: {
 }) {
 	const { note, $note } = props;
 
-	function onFetched(data: Pick<Misskey.entities.Note, 'reactions' | 'reactionEmojis'>): void {
+	function onFetched(
+		data: Pick<Misskey.entities.Note, 'reactions' | 'reactionEmojis'>,
+	): void {
 		$note.reactions = data.reactions;
-		$note.reactionCount = Object.values(data.reactions).reduce((a, b) => a + b, 0);
+		$note.reactionCount = Object.values(data.reactions).reduce(
+			(a, b) => a + b,
+			0,
+		);
 		$note.reactionEmojis = data.reactionEmojis;
 	}
 
@@ -154,6 +173,18 @@ function realtimeSubscribe(props: {
 				globalEvents.emit('noteDeleted', id);
 				break;
 			}
+
+			case 'updated': {
+				noteEvents.emit(`noteUpdated:${id}`, {
+					cw: body.cw,
+					text: body.text,
+					files: body.files,
+					poll: body.poll,
+					updatedAt: body.updatedAt,
+					emojis: body.emojis,
+				});
+				break;
+			}
 		}
 	}
 
@@ -186,6 +217,13 @@ export type ReactiveNoteData = {
 	reactionEmojis: Misskey.entities.Note['reactionEmojis'];
 	myReaction: Misskey.entities.Note['myReaction'];
 	pollChoices: NonNullable<Misskey.entities.Note['poll']>['choices'];
+
+	text: Misskey.entities.Note['text'];
+	files: Misskey.entities.Note['files'];
+	cw: Misskey.entities.Note['cw'];
+	poll: Misskey.entities.Note['poll'];
+	updatedAt: Misskey.entities.Note['updatedAt'];
+	emojis: Misskey.entities.Note['emojis'];
 };
 
 const noReaction = Symbol();
@@ -195,40 +233,59 @@ export function useNoteCapture(props: {
 	parentNote: Misskey.entities.Note | null;
 	mock?: boolean;
 }): {
-	$note: Reactive<ReactiveNoteData>;
-	subscribe: () => void;
-} {
+		$note: Reactive<ReactiveNoteData>;
+		subscribe: () => void;
+	} {
 	const { note, parentNote, mock } = props;
 
 	const $note = reactive<ReactiveNoteData>({
-		reactions: Object.entries(note.reactions).reduce((acc, [name, count]) => {
-			// Normalize reactions
-			const normalizedName = name.replace(/^:(\w+):$/, ':$1@.:');
-			if (acc[normalizedName] == null) {
-				acc[normalizedName] = count;
-			} else {
-				acc[normalizedName] += count;
-			}
-			return acc;
-		}, {} as Misskey.entities.Note['reactions']),
+		reactions: Object.entries(note.reactions).reduce(
+			(acc, [name, count]) => {
+				// Normalize reactions
+				const normalizedName = name.replace(/^:(\w+):$/, ':$1@.:');
+				if (acc[normalizedName] == null) {
+					acc[normalizedName] = count;
+				} else {
+					acc[normalizedName] += count;
+				}
+				return acc;
+			},
+			{} as Misskey.entities.Note['reactions'],
+		),
 		reactionCount: note.reactionCount,
 		reactionEmojis: note.reactionEmojis,
 		myReaction: note.myReaction,
 		pollChoices: note.poll?.choices ?? [],
+
+		cw: note.cw ?? null,
+		text: note.text ?? '',
+		files: note.files ?? undefined,
+		poll: note.poll ?? null,
+		updatedAt: note.updatedAt ?? null,
+		emojis: note.emojis,
 	});
 
 	noteEvents.on(`reacted:${note.id}`, onReacted);
 	noteEvents.on(`unreacted:${note.id}`, onUnreacted);
 	noteEvents.on(`pollVoted:${note.id}`, onPollVoted);
+	noteEvents.on(`noteUpdated:${note.id}`, onUpdated);
 
 	// 操作がダブっていないかどうかを簡易的に記録するためのMap
-	const reactionUserMap = new Map<Misskey.entities.User['id'], string | typeof noReaction>();
+	const reactionUserMap = new Map<
+		Misskey.entities.User['id'],
+		string | typeof noReaction
+	>();
 	let latestPollVotedKey: string | null = null;
 
 	function onReacted(ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; } | null; }): void {
 		let normalizedName = ctx.reaction.replace(/^:(\w+):$/, ':$1@.:');
-		normalizedName = normalizedName.match('\u200d') ? normalizedName : normalizedName.replace(/\ufe0f/g, '');
-		if (reactionUserMap.has(ctx.userId) && reactionUserMap.get(ctx.userId) === normalizedName) return;
+		normalizedName = normalizedName.match('\u200d')
+			? normalizedName
+			: normalizedName.replace(/\ufe0f/g, '');
+		if (
+			reactionUserMap.has(ctx.userId) &&
+			reactionUserMap.get(ctx.userId) === normalizedName
+		) return;
 		reactionUserMap.set(ctx.userId, normalizedName);
 
 		if (ctx.emoji && !(ctx.emoji.name in $note.reactionEmojis)) {
@@ -240,17 +297,22 @@ export function useNoteCapture(props: {
 		$note.reactions[normalizedName] = currentCount + 1;
 		$note.reactionCount += 1;
 
-		if ($i && (ctx.userId === $i.id)) {
+		if ($i && ctx.userId === $i.id) {
 			$note.myReaction = normalizedName;
 		}
 	}
 
 	function onUnreacted(ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; } | null; }): void {
 		let normalizedName = ctx.reaction.replace(/^:(\w+):$/, ':$1@.:');
-		normalizedName = normalizedName.match('\u200d') ? normalizedName : normalizedName.replace(/\ufe0f/g, '');
+		normalizedName = normalizedName.match('\u200d')
+			? normalizedName
+			: normalizedName.replace(/\ufe0f/g, '');
 
 		// 確実に一度リアクションされて取り消されている場合のみ処理をとめる（APIで初回読み込み→Streamでアップデート等の場合、reactionUserMapに情報がないため）
-		if (reactionUserMap.has(ctx.userId) && reactionUserMap.get(ctx.userId) === noReaction) return;
+		if (
+			reactionUserMap.has(ctx.userId) &&
+			reactionUserMap.get(ctx.userId) === noReaction
+		) return;
 		reactionUserMap.set(ctx.userId, noReaction);
 
 		const currentCount = $note.reactions[normalizedName] || 0;
@@ -259,7 +321,7 @@ export function useNoteCapture(props: {
 		$note.reactionCount = Math.max(0, $note.reactionCount - 1);
 		if ($note.reactions[normalizedName] === 0) delete $note.reactions[normalizedName];
 
-		if ($i && (ctx.userId === $i.id)) {
+		if ($i && ctx.userId === $i.id) {
 			$note.myReaction = null;
 		}
 	}
@@ -273,20 +335,61 @@ export function useNoteCapture(props: {
 		choices[ctx.choice] = {
 			...choices[ctx.choice],
 			votes: choices[ctx.choice].votes + 1,
-			...($i && (ctx.userId === $i.id) ? {
-				isVoted: true,
-			} : {}),
+			...($i && ctx.userId === $i.id
+				? {
+					isVoted: true,
+				}
+				: {}),
 		};
 
 		$note.pollChoices = choices;
 	}
 
+	function onUpdated(ctx: {
+		cw: Misskey.entities.Note['cw'];
+		text: Misskey.entities.Note['text'];
+		files: Misskey.entities.Note['files'];
+		poll: Misskey.entities.Note['poll'];
+		updatedAt: Misskey.entities.Note['updatedAt'];
+		emojis: Misskey.entities.Note['emojis'];
+	}): void {
+		if (ctx.emojis !== undefined) $note.emojis = note.emojis = ctx.emojis;
+		if (ctx.cw !== undefined) {
+			$note.cw = note.cw = ctx.cw;
+		}
+		if (ctx.files !== undefined) {
+			$note.files = note.files = ctx.files;
+			note.fileIds = ctx.files.map(file => file.id);
+		}
+		if (ctx.text !== undefined) {
+			$note.text = note.text = ctx.text;
+		}
+		if (ctx.poll !== undefined) {
+			const sameChoices = $note.poll?.multiple === ctx.poll?.multiple &&
+				$note.pollChoices.length === ctx.poll?.choices.length &&
+				$note.pollChoices.every((choice, index) => choice.text === ctx.poll?.choices[index].text);
+			const choices = ctx.poll?.choices.map((choice, index) => ({
+				...choice,
+				isVoted: sameChoices ? $note.pollChoices[index].isVoted : false,
+			})) ?? [];
+			$note.poll = note.poll = ctx.poll ? { ...ctx.poll, choices } : ctx.poll;
+			$note.pollChoices = choices;
+		}
+		if (ctx.updatedAt !== undefined) {
+			$note.updatedAt = note.updatedAt = ctx.updatedAt;
+		}
+	}
+
+	let subscribed = false;
+
 	function subscribe() {
+		if (subscribed) return;
 		if (mock) {
 			// モックモードでは購読しない
 			return;
 		}
 
+		subscribed = true;
 		if ($i && store.s.realtimeMode) {
 			realtimeSubscribe({
 				note,
@@ -303,39 +406,13 @@ export function useNoteCapture(props: {
 		noteEvents.off(`reacted:${note.id}`, onReacted);
 		noteEvents.off(`unreacted:${note.id}`, onUnreacted);
 		noteEvents.off(`pollVoted:${note.id}`, onPollVoted);
+		noteEvents.off(`noteUpdated:${note.id}`, onUpdated);
 	});
-
-	// 投稿からある程度経過している(=タイムラインを遡って表示した)ノートは、イベントが発生する可能性が低いためそもそも購読しない
-	// ただし「リノートされたばかりの過去のノート」(= parentNoteが存在し、かつparentNoteの投稿日時が最近)はイベント発生が考えられるため購読する
-	// TODO: デバイスとサーバーの時計がズレていると不具合の元になるため、ズレを検知して警告を表示するなどのケアが必要かもしれない
-	if (parentNote == null) {
-		if ((Date.now() - new Date(note.createdAt).getTime()) > 1000 * 60 * 5) { // 5min
-			// リノートで表示されているノートでもないし、投稿からある程度経過しているので自動で購読しない
-			return {
-				$note,
-				subscribe: () => {
-					subscribe();
-				},
-			};
-		}
-	} else {
-		if ((Date.now() - new Date(parentNote.createdAt).getTime()) > 1000 * 60 * 5) { // 5min
-			// リノートで表示されているノートだが、リノートされてからある程度経過しているので自動で購読しない
-			return {
-				$note,
-				subscribe: () => {
-					subscribe();
-				},
-			};
-		}
-	}
-
 	subscribe();
-
 	return {
 		$note,
 		subscribe: () => {
-			// すでに購読しているので何もしない
+			subscribe();
 		},
 	};
 }

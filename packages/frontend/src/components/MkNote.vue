@@ -49,28 +49,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="appearNote.channel" :class="$style.colorBar" :style="{ background: appearNote.channel.color }"></div>
 		<MkAvatar :class="[$style.avatar, prefer.s.useStickyIcons ? $style.useSticky : null]" :user="appearNote.user" :link="!mock" :preview="!mock"/>
 		<div :class="$style.main">
-			<MkNoteHeader :note="appearNote" :mini="true"/>
+			<MkNoteHeader :note="appearNote" :updatedAt="$appearNote.updatedAt" :mini="true"/>
 			<MkInstanceTicker v-if="showTicker" :host="appearNote.user.host" :instance="appearNote.user.instance"/>
 			<div style="container-type: inline-size;">
-				<p v-if="appearNote.cw != null" :class="$style.cw">
+				<p v-if="$appearNote.cw != null" :class="$style.cw">
 					<Mfm
-						v-if="appearNote.cw != ''"
-						:text="appearNote.cw"
+						v-if="$appearNote.cw != ''"
+						:text="$appearNote.cw"
 						:author="appearNote.user"
 						:nyaize="'respect'"
 						:enableEmojiMenu="true"
 						:enableEmojiMenuReaction="true"
 					/>
-					<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;"/>
+					<MkCwButton v-model="showContent" :text="$appearNote.text" :renote="appearNote.renote" :files="$appearNote.files" :poll="$appearNote.poll" style="margin: 4px 0;"/>
 				</p>
-				<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
+				<div v-show="$appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 					<div :class="$style.text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
 						<Mfm
-							v-if="appearNote.text"
+							v-if="$appearNote.text"
 							:parsedNodes="parsed"
-							:text="appearNote.text"
+							:text="$appearNote.text"
 							:author="appearNote.user"
 							:nyaize="'respect'"
 							:emojiUrls="appearNote.emojis"
@@ -86,14 +86,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</div>
 					</div>
-					<div v-if="appearNote.files && appearNote.files.length > 0" style="margin-top: 8px;">
-						<MkMediaList ref="galleryEl" :mediaList="appearNote.files" :user="appearNote.user"/>
+					<div v-if="$appearNote.files && $appearNote.files.length > 0" style="margin-top: 8px;">
+						<MkMediaList ref="galleryEl" :mediaList="$appearNote.files" :user="appearNote.user"/>
 					</div>
 					<MkPoll
-						v-if="appearNote.poll"
+						v-if="$appearNote.poll"
 						:noteId="appearNote.id"
-						:multiple="appearNote.poll.multiple"
-						:expiresAt="appearNote.poll.expiresAt"
+						:multiple="$appearNote.poll.multiple"
+						:expiresAt="$appearNote.poll.expiresAt"
 						:choices="$appearNote.pollChoices"
 						:author="appearNote.user"
 						:emojiUrls="appearNote.emojis"
@@ -197,8 +197,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { inject, ref, useTemplateRef, provide, computed } from 'vue';
-import type { Ref } from 'vue';
 import * as Misskey from 'misskey-js';
+import type { Ref } from 'vue';
+import type { Keymap } from '@/utility/hotkey.js';
 import { useNote } from '@/composables/use-note.js';
 import { prefer } from '@/preferences.js';
 import { i18n } from '@/i18n.js';
@@ -208,7 +209,6 @@ import { isEnabledUrlPreview } from '@/utility/url-preview.js';
 import { focusPrev, focusNext } from '@/utility/focus.js';
 import number from '@/filters/number.js';
 import { DI } from '@/di.js';
-import type { Keymap } from '@/utility/hotkey.js';
 
 // コンポーネント外部の依存関係
 import MkNoteSub from '@/components/MkNoteSub.vue';
@@ -357,7 +357,7 @@ const keymap = {
 			renoteCollapsed.value = false;
 		} else if (appearNote.cw != null) {
 			showContent.value = !showContent.value;
-		} else if (isLong) {
+		} else if (isLong.value) {
 			collapsed.value = !collapsed.value;
 		}
 	},

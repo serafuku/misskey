@@ -314,6 +314,17 @@ export type NoteUpdatedEvent = { id: Note['id'] } & ({
 		deletedAt: string;
 	};
 } | {
+	type: 'updated';
+	body: {
+		cw: Note['cw'];
+		text: Note['text'];
+		files: Note['files'];
+		fileIds: Note['fileIds'];
+		poll: Note['poll'];
+		emojis: Note['emojis'];
+		updatedAt: Note['updatedAt'];
+	};
+} | {
 	type: 'pollVoted';
 	body: {
 		choice: number;
