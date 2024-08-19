@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<PostFormProps & {
 	instant?: boolean;
 	fixed?: boolean;
 	autofocus?: boolean;
+	updateMode?: boolean;
 }>(), {
 	initialLocalOnly: undefined,
 });
