@@ -248,6 +248,11 @@ export class MiNote {
 	})
 	public renoteUserHost: string | null;
 
+	@Column('timestamp with time zone', {
+		default: null,
+	})
+	public updatedAt: Date | null;
+
 	@Column({
 		...id(),
 		nullable: true,

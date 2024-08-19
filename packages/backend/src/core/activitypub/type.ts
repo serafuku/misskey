@@ -18,6 +18,7 @@ export interface IObject {
 	_misskey_makeNotesFollowersOnlyBefore?: number | null;
 	_misskey_makeNotesHiddenBefore?: number | null;
 	published?: string;
+	updated?: string;
 	cc?: ApObject;
 	to?: ApObject;
 	attributedTo?: ApObject;

@@ -6357,6 +6357,10 @@ export interface Locale extends ILocale {
          */
         "resolveTutorial": string;
     };
+    /**
+     * 編集済み: {date} {time}
+     */
+    "noteUpdatedAt": ParameterizedString<"date" | "time">;
     "_delivery": {
         /**
          * 配信状態
@@ -8061,6 +8065,10 @@ export interface Locale extends ILocale {
              * パブリック投稿の許可
              */
             "canPublicNote": string;
+            /**
+             * ノートの編集
+             */
+            "canEditNote": string;
             /**
              * ノート内の最大メンション数
              */
