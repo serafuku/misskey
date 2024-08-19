@@ -16,7 +16,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkInput v-model="baseRoleQ" type="search">
 						<template #prefix><i class="ti ti-search"></i></template>
 					</MkInput>
-
 					<XPolicyEditor
 						v-model:rolePolicies="policies"
 						:isBaseRole="true"
