@@ -300,6 +300,7 @@ export * as 'notes/clips' from './endpoints/notes/clips.js';
 export * as 'notes/conversation' from './endpoints/notes/conversation.js';
 export * as 'notes/create' from './endpoints/notes/create.js';
 export * as 'notes/delete' from './endpoints/notes/delete.js';
+export * as 'notes/update' from './endpoints/notes/update.js';
 export * as 'notes/favorites/create' from './endpoints/notes/favorites/create.js';
 export * as 'notes/favorites/delete' from './endpoints/notes/favorites/delete.js';
 export * as 'notes/featured' from './endpoints/notes/featured.js';
