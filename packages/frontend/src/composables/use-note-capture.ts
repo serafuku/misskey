@@ -14,10 +14,21 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { prefer } from '@/preferences.js';
 import { globalEvents } from '@/events.js';
 
+type NoteEditBody = {
+	updatedAt: Misskey.entities.Note['updatedAt'];
+	cw: Misskey.entities.Note['cw'];
+	text: Misskey.entities.Note['text'];
+	files: Misskey.entities.Note['files'];
+	fileIds: Misskey.entities.Note['fileIds'];
+	poll: Misskey.entities.Note['poll'];
+	emojis: Misskey.entities.Note['emojis'];
+};
+
 export const noteEvents = new EventEmitter<{
 	[ev: `reacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; }; }) => void;
 	[ev: `unreacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; }; }) => void;
 	[ev: `pollVoted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; choice: string; }) => void;
+	[ev: `edited:${string}`]: (ctx: { noteId: Misskey.entities.Note['id']; editBody: NoteEditBody; }) => void;
 }>();
 
 const fetchEvent = new EventEmitter<{
@@ -153,6 +164,22 @@ function realtimeSubscribe(props: {
 				globalEvents.emit('noteDeleted', id);
 				break;
 			}
+
+			case 'updated': {
+				noteEvents.emit(`edited:${id}`, {
+					noteId: id,
+					editBody: {
+						updatedAt: new Date().toISOString(),
+						cw: body.cw,
+						text: body.text,
+						files: body.files,
+						fileIds: body.fileIds,
+						poll: body.poll,
+						emojis: body.emojis,
+					},
+				});
+				break;
+			}
 		}
 	}
 
@@ -185,6 +212,7 @@ export type ReactiveNoteData = {
 	reactionEmojis: Misskey.entities.Note['reactionEmojis'];
 	myReaction: Misskey.entities.Note['myReaction'];
 	pollChoices: NonNullable<Misskey.entities.Note['poll']>['choices'];
+	editBody: NoteEditBody;
 };
 
 const noReaction = Symbol();
@@ -214,11 +242,21 @@ export function useNoteCapture(props: {
 		reactionEmojis: note.reactionEmojis,
 		myReaction: note.myReaction,
 		pollChoices: note.poll?.choices ?? [],
+		editBody: {
+			updatedAt: note.updatedAt,
+			cw: note.cw,
+			text: note.text,
+			files: note.files,
+			fileIds: note.fileIds,
+			poll: note.poll,
+			emojis: note.emojis,
+		},
 	});
 
 	noteEvents.on(`reacted:${note.id}`, onReacted);
 	noteEvents.on(`unreacted:${note.id}`, onUnreacted);
 	noteEvents.on(`pollVoted:${note.id}`, onPollVoted);
+	noteEvents.on(`edited:${note.id}`, onEdited);
 
 	// 操作がダブっていないかどうかを簡易的に記録するためのMap
 	const reactionUserMap = new Map<Misskey.entities.User['id'], string | typeof noReaction>();
@@ -280,6 +318,16 @@ export function useNoteCapture(props: {
 		$note.pollChoices = choices;
 	}
 
+	function onEdited(ctx: { noteId: Misskey.entities.Note['id']; editBody: NoteEditBody }) {
+		$note.editBody.updatedAt = new Date().toISOString();
+		$note.editBody.cw = ctx.editBody.cw;
+		$note.editBody.text = ctx.editBody.text;
+		$note.editBody.files = ctx.editBody.files;
+		$note.editBody.fileIds = ctx.editBody.fileIds;
+		$note.editBody.poll = ctx.editBody.poll;
+		$note.editBody.emojis = ctx.editBody.emojis;
+	}
+
 	function subscribe() {
 		if (mock) {
 			// モックモードでは購読しない
@@ -302,6 +350,7 @@ export function useNoteCapture(props: {
 		noteEvents.off(`reacted:${note.id}`, onReacted);
 		noteEvents.off(`unreacted:${note.id}`, onUnreacted);
 		noteEvents.off(`pollVoted:${note.id}`, onPollVoted);
+		noteEvents.off(`edited:${note.id}`, onEdited);
 	});
 
 	// 投稿からある程度経過している(=タイムラインを遡って表示した)ノートは、イベントが発生する可能性が低いためそもそも購読しない

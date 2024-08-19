@@ -138,6 +138,7 @@ import { getPluginHandlers } from '@/plugin.js';
 import { DI } from '@/di.js';
 import { globalEvents } from '@/events.js';
 import { checkDragDataType, getDragData } from '@/drag-and-drop.js';
+import { noteEvents } from '@/composables/use-note-capture.js';
 
 const $i = ensureSignin();
 
@@ -147,6 +148,7 @@ const props = withDefaults(defineProps<PostFormProps & {
 	fixed?: boolean;
 	autofocus?: boolean;
 	freezeAfterPosted?: boolean;
+	updateMode?: boolean;
 	mock?: boolean;
 }>(), {
 	initialVisibleUsers: () => [],
@@ -771,6 +773,7 @@ function saveDraft() {
 			visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(x => x.id) : undefined,
 			quoteId: quoteId.value,
 			reactionAcceptance: reactionAcceptance.value,
+			noteId: props.updateMode ? props.initialNote?.id : undefined,
 		},
 	};
 
@@ -848,6 +851,7 @@ async function post(ev?: MouseEvent) {
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
 		reactionAcceptance: reactionAcceptance.value,
+		noteId: props.updateMode ? props.initialNote?.id : undefined,
 	};
 
 	if (withHashtags.value && hashtags.value && hashtags.value.trim() !== '') {
@@ -885,14 +889,31 @@ async function post(ev?: MouseEvent) {
 	}
 
 	posting.value = true;
-	misskeyApi('notes/create', postData, token).then((res) => {
+	misskeyApi(props.updateMode ? 'notes/update' : 'notes/create', postData, token).then((res) => {
 		if (props.freezeAfterPosted) {
 			posted.value = true;
 		} else {
 			clear();
 		}
 
-		globalEvents.emit('notePosted', res.createdNote);
+		if (props.updateMode) {
+			if (res?.createdNote) {
+				noteEvents.emit(`edited:${res.createdNote['id']}`, {
+					noteId: res.createdNote['id'],
+					editBody: {
+						updatedAt: res.createdNote['updatedAt'],
+						cw: res.createdNote['cw'],
+						text: res.createdNote['text'],
+						files: res.createdNote['files'],
+						fileIds: res.createdNote['fileIds'],
+						poll: res.createdNote['poll'],
+						emojis: res.createdNote['emojis'],
+					},
+				});
+			}
+		} else {
+			globalEvents.emit('notePosted', res.createdNote);
+		}
 
 		nextTick(() => {
 			deleteDraft();
