@@ -2052,6 +2052,8 @@ declare namespace entities {
         NotesFeaturedResponse,
         NotesGlobalTimelineRequest,
         NotesGlobalTimelineResponse,
+        NotesHistoryRequest,
+        NotesHistoryResponse,
         NotesHybridTimelineRequest,
         NotesHybridTimelineResponse,
         NotesLocalTimelineRequest,
@@ -2086,6 +2088,8 @@ declare namespace entities {
         NotesTranslateRequest,
         NotesTranslateResponse,
         NotesUnrenoteRequest,
+        NotesUpdateRequest,
+        NotesUpdateResponse,
         NotesUserListTimelineRequest,
         NotesUserListTimelineResponse,
         NotificationsCreateRequest,
@@ -2268,7 +2272,8 @@ declare namespace entities {
         ChatMessageLiteForRoom,
         ChatRoom,
         ChatRoomInvitation,
-        ChatRoomMembership
+        ChatRoomMembership,
+        NoteHistory
     }
 }
 export { entities }
@@ -2943,6 +2948,9 @@ type NoteDraft = components['schemas']['NoteDraft'];
 type NoteFavorite = components['schemas']['NoteFavorite'];
 
 // @public (undocumented)
+type NoteHistory = components['schemas']['NoteHistory'];
+
+// @public (undocumented)
 type NoteReaction = components['schemas']['NoteReaction'];
 
 // @public (undocumented)
@@ -3016,6 +3024,12 @@ type NotesGlobalTimelineRequest = operations['notes___global-timeline']['request
 
 // @public (undocumented)
 type NotesGlobalTimelineResponse = operations['notes___global-timeline']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type NotesHistoryRequest = operations['notes___history']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesHistoryResponse = operations['notes___history']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type NotesHybridTimelineRequest = operations['notes___hybrid-timeline']['requestBody']['content']['application/json'];
@@ -3124,6 +3138,12 @@ type NotesTranslateResponse = operations['notes___translate']['responses']['200'
 
 // @public (undocumented)
 type NotesUnrenoteRequest = operations['notes___unrenote']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesUpdateRequest = operations['notes___update']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesUpdateResponse = operations['notes___update']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type NotesUserListTimelineRequest = operations['notes___user-list-timeline']['requestBody']['content']['application/json'];
@@ -3356,7 +3376,7 @@ type RoleLite = components['schemas']['RoleLite'];
 type RolePolicies = components['schemas']['RolePolicies'];
 
 // @public (undocumented)
-export const rolePolicies: readonly ["gtlAvailable", "ltlAvailable", "canPublicNote", "mentionLimit", "canInvite", "inviteLimit", "inviteLimitCycle", "inviteExpirationTime", "canManageCustomEmojis", "canManageAvatarDecorations", "canSearchNotes", "canSearchUsers", "canUseTranslator", "canHideAds", "canCreateChannel", "driveCapacityMb", "maxFileSizeMb", "alwaysMarkNsfw", "canUpdateBioMedia", "pinLimit", "antennaLimit", "wordMuteLimit", "webhookLimit", "clipLimit", "noteEachClipsLimit", "userListLimit", "userEachUserListsLimit", "rateLimitFactor", "avatarDecorationLimit", "canImportAntennas", "canImportBlocking", "canImportFollowing", "canImportMuting", "canImportUserLists", "chatAvailability", "uploadableFileTypes", "noteDraftLimit", "scheduledNoteLimit", "watermarkAvailable"];
+export const rolePolicies: readonly ["gtlAvailable", "ltlAvailable", "canPublicNote", "canEditNote", "mentionLimit", "canInvite", "inviteLimit", "inviteLimitCycle", "inviteExpirationTime", "canManageCustomEmojis", "canManageAvatarDecorations", "canSearchNotes", "canSearchUsers", "canUseTranslator", "canHideAds", "canCreateChannel", "driveCapacityMb", "maxFileSizeMb", "alwaysMarkNsfw", "canUpdateBioMedia", "pinLimit", "antennaLimit", "wordMuteLimit", "webhookLimit", "clipLimit", "noteEachClipsLimit", "userListLimit", "userEachUserListsLimit", "rateLimitFactor", "avatarDecorationLimit", "canImportAntennas", "canImportBlocking", "canImportFollowing", "canImportMuting", "canImportUserLists", "chatAvailability", "uploadableFileTypes", "noteDraftLimit", "scheduledNoteLimit", "watermarkAvailable"];
 
 // @public (undocumented)
 type RolesListResponse = operations['roles___list']['responses']['200']['content']['application/json'];

@@ -20,7 +20,8 @@
 				"dbaeumer.vscode-eslint",
 				"Vue.volar",
 				"dbaeumer.vscode-eslint",
-				"mrmlnc.vscode-json5"
+				"mrmlnc.vscode-json5",
+				"eamodio.gitlens"
 			]
 		}
 	}

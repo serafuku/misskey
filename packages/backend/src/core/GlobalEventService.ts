@@ -110,8 +110,13 @@ export interface NoteEventTypes {
 		deletedAt: Date;
 	};
 	updated: {
+		updatedAt: string | null;
 		cw: string | null;
-		text: string;
+		text: string | null;
+		files: Packed<'DriveFile'>[];
+		fileIds: string[];
+		poll: any | null;
+		emojis: Record<string, string>;
 	};
 	reacted: {
 		reaction: string;

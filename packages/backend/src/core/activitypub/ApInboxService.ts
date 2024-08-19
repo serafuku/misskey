@@ -15,6 +15,7 @@ import { NotePiningService } from '@/core/NotePiningService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { NoteDeleteService } from '@/core/NoteDeleteService.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
+import { NoteUpdateService } from '@/core/NoteUpdateService.js';
 import { acquireApObjectLock } from '@/misc/distributed-lock.js';
 import { concat, toArray, toSingle, unique } from '@/misc/prelude/array.js';
 import type Logger from '@/logger.js';
@@ -30,7 +31,7 @@ import type { MiRemoteUser } from '@/models/User.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { AbuseReportService } from '@/core/AbuseReportService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { getApHrefNullable, getApId, getApIds, getApType, isAccept, isActor, isAdd, isAnnounce, isBlock, isCollection, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost } from './type.js';
+import { getApHrefNullable, getApId, getApIds, getApType, getOneApId, isAccept, isActor, isAdd, isAnnounce, isBlock, isCollection, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost } from './type.js';
 import { ApNoteService } from './models/ApNoteService.js';
 import { ApLoggerService } from './ApLoggerService.js';
 import { ApDbResolverService } from './ApDbResolverService.js';
@@ -76,6 +77,7 @@ export class ApInboxService {
 		private notePiningService: NotePiningService,
 		private userBlockingService: UserBlockingService,
 		private noteCreateService: NoteCreateService,
+		private noteUpdateService: NoteUpdateService,
 		private noteDeleteService: NoteDeleteService,
 		private apResolverService: ApResolverService,
 		private apDbResolverService: ApDbResolverService,
@@ -778,11 +780,13 @@ export class ApInboxService {
 
 	@bindThis
 	private async update(actor: MiRemoteUser, activity: IUpdate, resolver?: Resolver): Promise<string> {
+		const uri = getApId(activity);
+
 		if (actor.uri !== getApId(activity.actor)) {
 			return 'skip: invalid actor';
 		}
 
-		this.logger.debug('Update');
+		this.logger.info(`Update: ${uri}`);
 
 		// eslint-disable-next-line no-param-reassign
 		resolver ??= await this.apResolverService.createResolver();
@@ -795,11 +799,48 @@ export class ApInboxService {
 		if (isActor(object)) {
 			await this.apPersonService.updatePerson(actor.uri, resolver, object);
 			return 'ok: Person updated';
-		} else if (getApType(object) === 'Question') {
-			await this.apQuestionService.updateQuestion(object, actor, resolver).catch(err => console.error(err));
-			return 'ok: Question updated';
+		} else if (getApType(object) === 'Note' || getApType(object) === 'Question') {
+			return await this.updateNote(resolver, actor, object, false, activity);
 		} else {
 			return `skip: Unknown type: ${getApType(object)}`;
+		}
+	}
+
+	@bindThis
+	private async updateNote(resolver: Resolver, actor: MiRemoteUser, note: IObject, silent = false, activity?: IUpdate): Promise<string> {
+		const uri = getApId(note);
+
+		if (typeof note === 'object') {
+			if (note.attributedTo != null && actor.uri !== getOneApId(note.attributedTo)) {
+				return 'skip: actor.uri !== note.attributedTo';
+			}
+
+			if (typeof note.id === 'string') {
+				if (this.utilityService.extractDbHost(actor.uri) !== this.utilityService.extractDbHost(note.id)) {
+					return 'skip: host in actor.uri !== note.id';
+				}
+			}
+		}
+
+		const unlock = await acquireApObjectLock(this.redisClient, uri);
+
+		try {
+			const target = await this.notesRepository.findOneBy({ uri: uri });
+			if (!target) return `skip: target note not located: ${uri}`;
+			if (target.userId !== actor.id) return 'skip: actor is not the note author';
+			await this.apNoteService.updateNote({ ...note, attributedTo: note.attributedTo ?? actor.uri }, target, resolver, silent);
+			if (getApType(note) === 'Question') {
+				await this.apQuestionService.updateQuestion(note, actor, resolver);
+			}
+			return 'ok';
+		} catch (err) {
+			if (err instanceof StatusError && err.isClientError) {
+				return `skip ${err.statusCode}`;
+			} else {
+				throw err;
+			}
+		} finally {
+			unlock();
 		}
 	}
 
