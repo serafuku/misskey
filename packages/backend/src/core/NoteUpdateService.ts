@@ -29,7 +29,9 @@ import { MiPoll, IPoll } from '@/models/Poll.js';
 import { concat } from '@/misc/prelude/array.js';
 import { extractHashtags } from '@/misc/extract-hashtags.js';
 import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mfm.js';
+import Logger from '@/logger.js';
 import { NoteEntityService } from './entities/NoteEntityService.js';
+import { LoggerService } from './LoggerService.js';
 
 type MinimumUser = {
 	id: MiUser['id'];
@@ -52,7 +54,7 @@ type Option = {
 @Injectable()
 export class NoteUpdateService implements OnApplicationShutdown {
 	#shutdownController = new AbortController();
-
+	private logger: Logger;
 	constructor(
 		@Inject(DI.db)
 		private db: DataSource,
@@ -72,7 +74,10 @@ export class NoteUpdateService implements OnApplicationShutdown {
 		private apRendererService: ApRendererService,
 		private searchService: SearchService,
 		private activeUsersChart: ActiveUsersChart,
-	) { }
+		private loggerService: LoggerService,
+	) { 
+		this.logger = this.loggerService.getLogger('NoteUpdateService');
+	}
 
 	@bindThis
 	public async update(user: {
@@ -200,7 +205,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 
 			return await this.notesRepository.findOneBy({ id: note.id });
 		} catch (e) {
-			console.error(e);
+			this.logger.error(`${JSON.stringify(e)}`);
 
 			throw e;
 		}
@@ -218,8 +223,8 @@ export class NoteUpdateService implements OnApplicationShutdown {
 
 			const noteObj = await this.noteEntityService.pack(note, user);
 
-			console.log(noteObj);
-
+			this.logger.info(`Note updated: ${note.uri ?? note.id}`);
+			this.logger.debug(`noteObj: ${JSON.stringify(noteObj)}`);
 			this.globalEventService.publishNoteStream(note.id, 'updated', {
 				cw: noteObj.cw ?? null,
 				text: noteObj.text,

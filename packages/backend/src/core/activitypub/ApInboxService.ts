@@ -770,7 +770,7 @@ export class ApInboxService {
 			return 'skip: invalid actor';
 		}
 
-		this.logger.debug(`Update: ${uri}`);
+		this.logger.info(`Update: ${uri}`);
 
 		const resolver = this.apResolverService.createResolver();
 
