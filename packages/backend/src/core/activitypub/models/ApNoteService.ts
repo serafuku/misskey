@@ -23,6 +23,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { bindThis } from '@/decorators.js';
 import { checkHttps } from '@/misc/check-https.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { NoteUpdateService } from '@/core/NoteUpdateService.js';
 import { getOneApId, getApId, getOneApHrefNullable, validPost, isEmoji, getApType } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
@@ -36,7 +37,6 @@ import { ApQuestionService } from './ApQuestionService.js';
 import { ApImageService } from './ApImageService.js';
 import type { Resolver } from '../ApResolverService.js';
 import type { IObject, IPost } from '../type.js';
-import { NoteUpdateService } from '@/core/NoteUpdateService.js';
 
 @Injectable()
 export class ApNoteService {
@@ -235,7 +235,7 @@ export class ApNoteService {
 				})
 				.catch(async err => {
 					this.logger.warn(`Error in inReplyTo ${note.inReplyTo} - ${err.statusCode ?? err}`);
-					if(err?.statusCode === 401 || err?.statusCode === 403 || err?.statusCode === 404){
+					if (err?.statusCode === 401 || err?.statusCode === 403 || err?.statusCode === 404) {
 						this.logger.info('Set inReplyTo to null');
 						return null;
 					}
