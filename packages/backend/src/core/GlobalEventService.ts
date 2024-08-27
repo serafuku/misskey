@@ -123,6 +123,7 @@ export interface NoteEventTypes {
 		files: Packed<'DriveFile'>[];
 		fileIds: string[];
 		poll: any | null;
+		emojis: Record<string, string>;
 	};
 	reacted: {
 		reaction: string;
