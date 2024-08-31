@@ -93,6 +93,7 @@ export const permissions = [
 	'write:admin:avatar-decorations',
 	'read:admin:avatar-decorations',
 	'write:admin:federation',
+	'read:admin:federation',
 	'write:admin:account',
 	'read:admin:account',
 	'write:admin:emoji',

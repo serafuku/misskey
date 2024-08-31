@@ -2075,6 +2075,7 @@ _permissions:
   "write:admin:avatar-decorations": "아바타 꾸미기 수정하기"
   "read:admin:avatar-decorations": "아바타 꾸미기 보기"
   "write:admin:federation": "연합 정보 수정하기"
+  "read:admin:federation": "연합 정보 읽기"
   "write:admin:account": "사용자 계정 수정하기"
   "read:admin:account": "사용자 정보 보기"
   "write:admin:emoji": "이모지 수정하기"
