@@ -1627,14 +1627,14 @@ export type paths = {
      * federation/instances
      * @description No description provided.
      *
-     * **Credential required**: *No*
+     * **Credential required**: *Yes* / **Permission**: *read:federation*
      */
     get: operations['federation___instances'];
     /**
      * federation/instances
      * @description No description provided.
      *
-     * **Credential required**: *No*
+     * **Credential required**: *Yes* / **Permission**: *read:federation*
      */
     post: operations['federation___instances'];
   };
@@ -1643,7 +1643,7 @@ export type paths = {
      * federation/show-instance
      * @description No description provided.
      *
-     * **Credential required**: *No*
+     * **Credential required**: *Yes* / **Permission**: *read:federation*
      */
     post: operations['federation___show-instance'];
   };
@@ -2366,8 +2366,7 @@ export type paths = {
      * i/revoke-token
      * @description No description provided.
      *
-     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
-     * **Credential required**: *Yes*
+     * **Credential required**: *Yes* / **Permission**: *read:account*
      */
     post: operations['i___revoke-token'];
   };
@@ -15274,7 +15273,7 @@ export type operations = {
    * federation/instances
    * @description No description provided.
    *
-   * **Credential required**: *No*
+   * **Credential required**: *Yes* / **Permission**: *read:federation*
    */
   federation___instances: {
     requestBody: {
@@ -15341,7 +15340,7 @@ export type operations = {
    * federation/show-instance
    * @description No description provided.
    *
-   * **Credential required**: *No*
+   * **Credential required**: *Yes* / **Permission**: *read:federation*
    */
   'federation___show-instance': {
     requestBody: {
@@ -19590,8 +19589,7 @@ export type operations = {
    * i/revoke-token
    * @description No description provided.
    *
-   * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
-   * **Credential required**: *Yes*
+   * **Credential required**: *Yes* / **Permission**: *read:account*
    */
   'i___revoke-token': {
     requestBody: {
