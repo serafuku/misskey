@@ -2090,7 +2090,6 @@ _permissions:
   "write:admin:avatar-decorations": "Can manage avatar decorations"
   "read:admin:avatar-decorations": "View avatar decorations"
   "write:admin:federation": "Manage federation data"
-  "read:admin:federation": "Read federation data"
   "write:admin:account": "Manage user account"
   "read:admin:account": "View user account"
   "write:admin:emoji": "Manage emoji"
