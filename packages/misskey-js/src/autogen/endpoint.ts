@@ -409,6 +409,8 @@ import type {
 	NotesCreateRequest,
 	NotesCreateResponse,
 	NotesUpdateRequest,
+	NotesHistoryRequest,
+	NotesHistoryResponse,
 	NotesDeleteRequest,
 	NotesFavoritesCreateRequest,
 	NotesFavoritesDeleteRequest,
@@ -848,6 +850,7 @@ export type Endpoints = {
 	'notes/conversation': { req: NotesConversationRequest; res: NotesConversationResponse };
 	'notes/create': { req: NotesCreateRequest; res: NotesCreateResponse };
 	'notes/update': { req: NotesUpdateRequest; res: EmptyResponse };
+	'notes/history': { req: NotesHistoryRequest; res: NotesHistoryResponse };
 	'notes/delete': { req: NotesDeleteRequest; res: EmptyResponse };
 	'notes/favorites/create': { req: NotesFavoritesCreateRequest; res: EmptyResponse };
 	'notes/favorites/delete': { req: NotesFavoritesDeleteRequest; res: EmptyResponse };
@@ -1231,6 +1234,7 @@ export const endpointReqTypes: Record<keyof Endpoints, 'application/json' | 'mul
 	'notes/conversation': 'application/json',
 	'notes/create': 'application/json',
 	'notes/update': 'application/json',
+	'notes/history': 'application/json',
 	'notes/delete': 'application/json',
 	'notes/favorites/create': 'application/json',
 	'notes/favorites/delete': 'application/json',
