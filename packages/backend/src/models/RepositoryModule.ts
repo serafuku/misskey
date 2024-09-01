@@ -80,6 +80,7 @@ import {
 	MiWebhook,
 } from './_.js';
 import type { Provider } from '@nestjs/common';
+import { NoteHistory } from './NoteHistory.js';
 import type { DataSource } from 'typeorm';
 
 const $usersRepository: Provider = {
@@ -91,6 +92,12 @@ const $usersRepository: Provider = {
 const $notesRepository: Provider = {
 	provide: DI.notesRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiNote).extend(miRepository as MiRepository<MiNote>),
+	inject: [DI.db],
+};
+
+const $noteHistoryRepository: Provider = {
+	provide: DI.noteHistoryRepository,
+	useFactory: (db: DataSource) => db.getRepository(NoteHistory).extend(miRepository as MiRepository<NoteHistory>),
 	inject: [DI.db],
 };
 
@@ -575,6 +582,7 @@ const $reversiGamesRepository: Provider = {
 		$userMemosRepository,
 		$bubbleGameRecordsRepository,
 		$reversiGamesRepository,
+		$noteHistoryRepository,
 	],
 	exports: [
 		$usersRepository,
@@ -647,6 +655,7 @@ const $reversiGamesRepository: Provider = {
 		$userMemosRepository,
 		$bubbleGameRecordsRepository,
 		$reversiGamesRepository,
+		$noteHistoryRepository,
 	],
 })
 export class RepositoryModule {

@@ -1684,6 +1684,8 @@ declare namespace entities {
         NotesFeaturedResponse,
         NotesGlobalTimelineRequest,
         NotesGlobalTimelineResponse,
+        NotesHistoryRequest,
+        NotesHistoryResponse,
         NotesHybridTimelineRequest,
         NotesHybridTimelineResponse,
         NotesLocalTimelineRequest,
@@ -1881,7 +1883,8 @@ declare namespace entities {
         MetaDetailedOnly,
         MetaDetailed,
         SystemWebhook,
-        AbuseReportNotificationRecipient
+        AbuseReportNotificationRecipient,
+        NoteHistory
     }
 }
 export { entities }
@@ -2676,6 +2679,9 @@ export { note }
 type NoteFavorite = components['schemas']['NoteFavorite'];
 
 // @public (undocumented)
+type NoteHistory = components['schemas']['NoteHistory'];
+
+// @public (undocumented)
 type NoteReaction = components['schemas']['NoteReaction'];
 
 // @public (undocumented)
@@ -2722,6 +2728,12 @@ type NotesGlobalTimelineRequest = operations['notes___global-timeline']['request
 
 // @public (undocumented)
 type NotesGlobalTimelineResponse = operations['notes___global-timeline']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type NotesHistoryRequest = operations['notes___history']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesHistoryResponse = operations['notes___history']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type NotesHybridTimelineRequest = operations['notes___hybrid-timeline']['requestBody']['content']['application/json'];
