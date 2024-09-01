@@ -75,7 +75,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 		private searchService: SearchService,
 		private activeUsersChart: ActiveUsersChart,
 		private loggerService: LoggerService,
-	) { 
+	) {
 		this.logger = this.loggerService.getLogger('NoteUpdateService');
 	}
 
