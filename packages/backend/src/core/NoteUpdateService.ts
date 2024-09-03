@@ -32,6 +32,7 @@ import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mf
 import Logger from '@/logger.js';
 import { NoteEntityService } from './entities/NoteEntityService.js';
 import { LoggerService } from './LoggerService.js';
+import { NoteHistorySerivce } from './NoteHistoryService.js';
 
 type MinimumUser = {
 	id: MiUser['id'];
@@ -75,6 +76,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 		private searchService: SearchService,
 		private activeUsersChart: ActiveUsersChart,
 		private loggerService: LoggerService,
+		private noteHistoryService: NoteHistorySerivce,
 	) {
 		this.logger = this.loggerService.getLogger('NoteUpdateService');
 	}
@@ -202,6 +204,8 @@ export class NoteUpdateService implements OnApplicationShutdown {
 			} else {
 				await this.notesRepository.update({ id: note.id }, values);
 			}
+
+			await this.noteHistoryService.recordHistory(note.id, note, { updatedAt: data.updatedAt });
 
 			return await this.notesRepository.findOneBy({ id: note.id });
 		} catch (e) {

@@ -72,7 +72,7 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async record (
+	public async recordHistory (
 		note_id: MiNote['id'],
 		note: MiNote,
 		optoins: Option,
@@ -86,7 +86,11 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 			fileIds: note.fileIds,
 			attachedFileTypes: note.attachedFileTypes,
 			emojis: note.emojis,
+			text: note.text,
+			visibility: note.visibility,
+			visibleUserIds: note.visibleUserIds,
 		};
+
 		try {
 			this.noteHistoryRepository.insert(history_data);
 		} catch (e) {
