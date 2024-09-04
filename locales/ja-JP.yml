@@ -1264,6 +1264,7 @@ sensitiveMediaRevealConfirm: "センシティブなメディアです。表示�
 createdLists: "作成したリスト"
 createdAntennas: "作成したアンテナ"
 noteUpdatedAt: "編集済み: {date} {time}"
+editHistory: "修正履歴"
 
 _delivery:
   status: "配信状態"
