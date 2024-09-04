@@ -1264,6 +1264,7 @@ sensitiveMediaRevealConfirm: "This might be a sensitive media. Are you sure to r
 createdLists: "Created lists"
 createdAntennas: "Created antennas"
 noteUpdatedAt: "Edited: {date} {time}"
+editHistory: "Edit history"
 _delivery:
   status: "Delivery status"
   stop: "Suspended"

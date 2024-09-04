@@ -150,6 +150,8 @@ import { ApQuestionService } from './activitypub/models/ApQuestionService.js';
 import { QueueModule } from './QueueModule.js';
 import { QueueService } from './QueueService.js';
 import { LoggerService } from './LoggerService.js';
+import { NoteHistorySerivce } from './NoteHistoryService.js';
+import { NoteHistoryEntityService } from './entities/NoteHistoryEntityService.js';
 import type { Provider } from '@nestjs/common';
 
 //#region 文字列ベースでのinjection用(循環参照対応のため)
@@ -262,6 +264,7 @@ const $ModerationLogEntityService: Provider = { provide: 'ModerationLogEntitySer
 const $MutingEntityService: Provider = { provide: 'MutingEntityService', useExisting: MutingEntityService };
 const $RenoteMutingEntityService: Provider = { provide: 'RenoteMutingEntityService', useExisting: RenoteMutingEntityService };
 const $NoteEntityService: Provider = { provide: 'NoteEntityService', useExisting: NoteEntityService };
+const $NoteHistoryEntityService: Provider = { provide: 'NoteHistoryEntityService', useExisting: NoteHistoryEntityService };
 const $NoteFavoriteEntityService: Provider = { provide: 'NoteFavoriteEntityService', useExisting: NoteFavoriteEntityService };
 const $NoteReactionEntityService: Provider = { provide: 'NoteReactionEntityService', useExisting: NoteReactionEntityService };
 const $NotificationEntityService: Provider = { provide: 'NotificationEntityService', useExisting: NotificationEntityService };
@@ -411,6 +414,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		MutingEntityService,
 		RenoteMutingEntityService,
 		NoteEntityService,
+		NoteHistoryEntityService,
 		NoteFavoriteEntityService,
 		NoteReactionEntityService,
 		NotificationEntityService,
@@ -445,6 +449,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ApPersonService,
 		ApQuestionService,
 		QueueService,
+		NoteHistorySerivce,
 
 		//#region 文字列ベースでのinjection用(循環参照対応のため)
 		$LoggerService,
@@ -556,6 +561,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$MutingEntityService,
 		$RenoteMutingEntityService,
 		$NoteEntityService,
+		$NoteHistoryEntityService,
 		$NoteFavoriteEntityService,
 		$NoteReactionEntityService,
 		$NotificationEntityService,
@@ -701,6 +707,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		MutingEntityService,
 		RenoteMutingEntityService,
 		NoteEntityService,
+		NoteHistoryEntityService,
 		NoteFavoriteEntityService,
 		NoteReactionEntityService,
 		NotificationEntityService,
@@ -735,6 +742,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ApPersonService,
 		ApQuestionService,
 		QueueService,
+		NoteHistorySerivce,
 
 		//#region 文字列ベースでのinjection用(循環参照対応のため)
 		$LoggerService,
@@ -845,6 +853,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$MutingEntityService,
 		$RenoteMutingEntityService,
 		$NoteEntityService,
+		$NoteHistoryEntityService,
 		$NoteFavoriteEntityService,
 		$NoteReactionEntityService,
 		$NotificationEntityService,

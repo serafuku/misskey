@@ -60,9 +60,9 @@ jobs:
           platforms: ${{ matrix.platform }}
           provenance: false
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          outputs: type=image,name=${{env.REGISTRY}}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ endsWith(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ endsWith(matrix.platform, 'amd64') && 'amd64' || 'arm64' }},mode=max,compression=zstd,compression-level=1
+          outputs: type=image,name=${{env.REGISTRY}}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true,compression=zstd,compression-level=1
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
