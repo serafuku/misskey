@@ -5152,6 +5152,10 @@ export interface Locale extends ILocale {
      * 編集済み: {date} {time}
      */
     "noteUpdatedAt": ParameterizedString<"date" | "time">;
+    /**
+     * edit history
+     */
+    "editHistory": string;
     "_delivery": {
         /**
          * 配信状態

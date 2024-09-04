@@ -1267,6 +1267,7 @@ genEmbedCode: "Generate embed code"
 noteOfThisUser: "Notes by this user"
 clipNoteLimitExceeded: "No more notes can be added to this clip."
 noteUpdatedAt: "Edited: {date} {time}"
+editHistory: "Edit history"
 _delivery:
   status: "Delivery status"
   stop: "Suspended"

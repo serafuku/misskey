@@ -1284,6 +1284,7 @@ unknownWebAuthnKey: "登録されていないパスキーです。"
 passkeyVerificationFailed: "パスキーの検証に失敗しました。"
 passkeyVerificationSucceededButPasswordlessLoginDisabled: "パスキーの検証に成功しましたが、パスワードレスログインが無効になっています。"
 noteUpdatedAt: "編集済み: {date} {time}"
+editHistory: "修正履歴"
 
 _delivery:
   status: "配信状態"
