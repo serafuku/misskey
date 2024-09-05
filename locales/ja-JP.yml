@@ -1265,6 +1265,8 @@ createdLists: "作成したリスト"
 createdAntennas: "作成したアンテナ"
 noteUpdatedAt: "編集済み: {date} {time}"
 editHistory: "修正履歴"
+fold: "開く"
+unfold: "閉じる"
 
 _delivery:
   status: "配信状態"
