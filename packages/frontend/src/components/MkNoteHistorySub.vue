@@ -13,7 +13,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkA v-user-preview="originalNote.user.id" :class="$style.name" :to="userPage(originalNote.user)">
 						<MkUserName :user="originalNote.user"/>
 					</MkA>
-					<div :class="$style.username"><MkAcct :user="originalNote.user"/></div>
+					<div :class="$style.username">
+						<span><MkAcct :user="originalNote.user"/></span>
+						<span :class="$style.time">{{ i18n.ts.createdAt }}: <MkTime :time="history.createdAt" mode="detail"/>
+						</span>
+					</div>
 				</div>
 			</div>
 			<MkNoteHistorySubContent :class="$style.body" :history="history" :originalNote="originalNote"/>
@@ -28,6 +32,7 @@ import * as Misskey from 'misskey-js';
 import MkNoteHeader from './MkNoteHeader.vue';
 import MkNoteHistorySubContent from './MkNoteHistorySubContent.vue';
 import { userPage } from '@/filters/user.js';
+import { i18n } from '@/i18n.js';
 
 const props = withDefaults(defineProps<{
 	history: Misskey.entities.NoteHistory;
@@ -71,6 +76,12 @@ const props = withDefaults(defineProps<{
 	&:hover {
 		text-decoration: underline;
 	}
+}
+
+.time {
+	margin-left: 1em;
+	font-size: 0.9em;
+	color: var(--accent);
 }
 
 .noteHeader {
