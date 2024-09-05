@@ -91,6 +91,7 @@ export class NoteHistoryEntityService implements OnModuleInit {
 		const packed: Packed<'NoteHistory'> = await awaitAll({
 			id: history.id,
 			noteId: history.noteId,
+			createdAt: history.createdAt.toISOString(),
 			updatedAt: history.updatedAt.toISOString(),
 			userId: history.userId,
 			text: text,
