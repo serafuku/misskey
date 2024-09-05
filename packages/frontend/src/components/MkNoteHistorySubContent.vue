@@ -11,12 +11,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<span v-if="props.history.files && props.history.files.length > 0 && !collapsed">
 		<MkMediaList :mediaList="props.history.files"/>
 	</span>
-	<button v-if="collapsed" :class="$style.showMore" class="_button" @click="collapsed = false">
-		<span :class="$style.showMoreLabel">{{ i18n.ts.showMore }}</span>
-	</button>
-	<button v-else-if="!collapsed" :class="$style.showLess" class="_button" @click="collapsed = true">
-		<span :class="$style.showLessLabel">{{ i18n.ts.showLess }}</span>
-	</button>
+	<div :class="$style.showButton">
+		<button v-if="collapsed" :class="$style.showMore" class="_button" @click="collapsed = false">
+			<span :class="$style.showMoreLabel">{{ i18n.ts.fold }}</span>
+		</button>
+		<button v-else-if="!collapsed" :class="$style.showLess" class="_button" @click="collapsed = true">
+			<span :class="$style.showLessLabel">{{ i18n.ts.unfold }}</span>
+		</button>
+	</div>
 </div>
 </template>
 
@@ -56,7 +58,7 @@ const collapsed = ref(true);
 .showMoreLabel {
 	display: inline-block;
 	background: var(--popup);
-	padding: 0.6em 5em;
+	padding: 0.6em 8em;
 	font-size: 0.8em;
 	border-radius: 0.8em;
 	box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
@@ -72,7 +74,7 @@ const collapsed = ref(true);
 .showLessLabel {
 	display: inline-block;
 	background: var(--popup);
-	padding: 0.6em 5em;
+	padding: 0.6em 8em;
 	margin-top: 3em;
 	font-size: 0.8em;
 	border-radius: 0.8em;
