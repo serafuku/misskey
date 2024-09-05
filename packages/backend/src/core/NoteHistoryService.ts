@@ -4,17 +4,8 @@
  */
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { DataSource, MoreThan } from 'typeorm';
+import { DataSource, LessThan, MoreThan } from 'typeorm';
 import { MiNote } from '@/models/Note.js';
-import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
-import { RelayService } from '@/core/RelayService.js';
-import ActiveUsersChart from '@/core/chart/charts/active-users.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
-import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
-import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
-import { SearchService } from '@/core/SearchService.js';
 import Logger from '@/logger.js';
 import { IdService } from '@/core/IdService.js';
 
@@ -23,7 +14,7 @@ import type { NoteHistoryRepository, UsersRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { NoteHistory } from '@/models/NoteHistory.js';
 import { LoggerService } from './LoggerService.js';
-import { NoteEntityService } from './entities/NoteEntityService.js';
+import { AppLockService } from './AppLockService.js';
 
 type Option = {
 	updatedAt?: Date | null;
@@ -43,46 +34,53 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 		@Inject(DI.noteHistoryRepository)
 		private noteHistoryRepository: NoteHistoryRepository,
 
-		private userEntityService: UserEntityService,
-		private noteEntityService: NoteEntityService,
-		private driveFileEntityService: DriveFileEntityService,
-		private globalEventService: GlobalEventService,
-		private relayService: RelayService,
-		private apDeliverManagerService: ApDeliverManagerService,
-		private apRendererService: ApRendererService,
-		private searchService: SearchService,
-		private activeUsersChart: ActiveUsersChart,
 		private idService: IdService,
 
 		private loggerService: LoggerService,
+		private appLockService: AppLockService,
+
 	) {
 		this.logger = this.loggerService.getLogger('NoteHistorySerivce');
 	}
 
 	@bindThis
 	public async recordHistory (
-		note_id: MiNote['id'],
-		note: MiNote,
-		optoins: Option,
+		newData: MiNote,
+		originalNote: MiNote,
+		options: Option,
 	) {
-		this.logger.info(`Record Note History: ${note_id}`);
-		const history_data: NoteHistory = {
-			id: this.idService.gen(optoins.updatedAt?.getTime()),
-			noteId: note.id,
-			updatedAt: optoins.updatedAt ?? new Date(),
-			userId: note.userId,
-			fileIds: note.fileIds,
-			attachedFileTypes: note.attachedFileTypes,
-			emojis: note.emojis,
-			text: note.text,
-			visibility: note.visibility,
-			visibleUserIds: note.visibleUserIds,
-		};
+		const unlock = await this.appLockService.getApLock(`record-note-history:${originalNote.id}`);
 
 		try {
-			this.noteHistoryRepository.insert(history_data);
+			const lastRecord = await this.noteHistoryRepository.findOne({ where: { noteId: originalNote.id }, order: { id: 'DESC' } });
+			const lastRecord_createdAt = lastRecord?.updatedAt ?? this.idService.parse(originalNote.id).date;
+
+			const history_data: NoteHistory = {
+				id: this.idService.gen(new Date().getTime()),
+				noteId: originalNote.id,
+				createdAt: lastRecord_createdAt, // 기록할 내용이 만들어진 시간
+				updatedAt: options.updatedAt ?? new Date(), //대체된 시간
+				userId: originalNote.userId,
+				fileIds: originalNote.fileIds,
+				attachedFileTypes: originalNote.attachedFileTypes,
+				emojis: originalNote.emojis,
+				text: originalNote.text,
+				visibility: originalNote.visibility,
+				visibleUserIds: originalNote.visibleUserIds,
+			};
+
+			if (newData.text === originalNote.text && JSON.stringify(newData.fileIds) === JSON.stringify(originalNote.fileIds)) {
+				this.logger.info(`Skip Record History (The two notes are the same): ${originalNote.id}`);
+			} else if (lastRecord && lastRecord.text === newData.text && JSON.stringify(lastRecord.fileIds) === JSON.stringify(newData.fileIds)) {
+				this.logger.info('Skip Record History (Already inserted)');
+			} else {
+				this.logger.info(`Record History for: ${originalNote.id}`);
+				await this.noteHistoryRepository.insert(history_data);
+			}
 		} catch (e) {
 			this.logger.error(`Note History record Error! ${e}`);
+		} finally {
+			unlock();
 		}
 	}
 
@@ -91,15 +89,18 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 		note_id: MiNote['id'],
 		limit: number,
 		sinceId?: NoteHistory['id'],
+		untilId?: NoteHistory['id'],
 	): Promise<NoteHistory[] | null> {
 		this.logger.info(`get history of note ${note_id}`);
 		try {
 			const history = await this.noteHistoryRepository.find({
 				where: {
 					noteId: note_id,
-					...(sinceId ? { id: MoreThan(sinceId) } : {}) },
+					...(sinceId ? { id: MoreThan(sinceId) } : {}),
+					...(untilId ? { id: LessThan(untilId) } : {}),
+				},
 				take: limit,
-				order: { id: 'ASC' },
+				order: { id: 'DESC' },
 			});
 			if (history.length > 0) {
 				return history;

@@ -13,6 +13,7 @@ services:
     networks:
       - internal_network
       - external_network
+    init: true
 
   redis:
     restart: unless-stopped

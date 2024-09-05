@@ -47,6 +47,7 @@ export const paramDef = {
 		noteId: { type: 'string', format: 'misskey:id' },
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
+		untilId: { type: 'string', format: 'misskey:id' },
 	},
 	required: ['noteId'],
 } as const;
@@ -63,7 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				if (err.id === '9725d0ce-ba28-4dde-95a7-2cbb2c15de24') throw new ApiError(meta.errors.noSuchNote);
 				throw err;
 			});
-			const note_history = await this.noteHistoryService.getHistory(note.id, ps.limit, ps.sinceId);
+			const note_history = await this.noteHistoryService.getHistory(note.id, ps.limit, ps.sinceId, ps.untilId);
 			if (!note_history) {
 				return [];
 			}
