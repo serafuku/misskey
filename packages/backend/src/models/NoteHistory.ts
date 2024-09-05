@@ -21,6 +21,9 @@ export class NoteHistory {
 	public note?: MiNote | null;
 
 	@Column('timestamp with time zone')
+	public createdAt: Date;
+
+	@Column('timestamp with time zone')
 	public updatedAt: Date;
 
 	@Column(id())
