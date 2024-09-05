@@ -5073,7 +5073,7 @@ export interface Locale extends ILocale {
      */
     "noteUpdatedAt": ParameterizedString<"date" | "time">;
     /**
-     * edit history
+     * 修正履歴
      */
     "editHistory": string;
     "_delivery": {
