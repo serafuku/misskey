@@ -8,8 +8,6 @@
 	},
 	"jest.jestCommandLine": "pnpm run jest",
 	"jest.runMode": "on-demand",
-	"editor.codeActionsOnSave": {
-		"source.fixAll": "explicit"
-	},
+
 	"editor.formatOnSave": false
 }
