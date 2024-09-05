@@ -5093,6 +5093,8 @@ export type components = {
       id: string;
       noteId: string;
       /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
       updatedAt: string;
       /** Format: id */
       userId: string;
@@ -21737,6 +21739,8 @@ export type operations = {
           limit?: number;
           /** Format: misskey:id */
           sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
         };
       };
     };
