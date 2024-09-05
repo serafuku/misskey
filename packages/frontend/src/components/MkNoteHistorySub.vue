@@ -8,13 +8,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.main">
 		<div :class="$style.body">
 			<div :class="$style.noteHeader">
-				<MkAvatar :class="$style.noteHeaderAvatar" :user="originalNote.user" indicator link preview/>
+				<MkAvatar :class="$style.avatar" :user="originalNote.user" indicator link preview/>
 				<div>
 					<MkA v-user-preview="originalNote.user.id" :class="$style.name" :to="userPage(originalNote.user)">
 						<MkUserName :user="originalNote.user"/>
 					</MkA>
 					<div :class="$style.username">
 						<span><MkAcct :user="originalNote.user"/></span>
+					</div>
+					<div>
 						<span :class="$style.time">{{ i18n.ts.createdAt }}: <MkTime :time="history.createdAt" mode="detail"/>
 						</span>
 					</div>
@@ -49,7 +51,7 @@ const props = withDefaults(defineProps<{
 
 <style lang="scss" module>
 .root {
-	padding: 16px 32px;
+	padding: 12px 8px;
 	font-size: 0.9em;
 	position: relative;
 
@@ -61,11 +63,15 @@ const props = withDefaults(defineProps<{
 
 .main {
 	display: flex;
+	padding: 16px;
+	border: dashed 1px var(--renote);
+	border-radius: 8px;
+	overflow: clip;
 }
 .name {
 	flex-shrink: 1;
 	display: block;
-	margin: 0 .5em 0 0.9em;
+	margin-left: 10px;
 	padding: 0;
 	overflow: hidden;
 	font-size: 1em;
@@ -79,8 +85,8 @@ const props = withDefaults(defineProps<{
 }
 
 .time {
-	margin-left: 1em;
-	font-size: 0.9em;
+	margin-left: 10px;
+	font-size: 0.8em;
 	color: var(--accent);
 }
 
@@ -99,7 +105,7 @@ const props = withDefaults(defineProps<{
 }
 .username {
 	flex-shrink: 9999999;
-	margin: 0 .5em 0 0.9em;
+	margin-left: 10px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
@@ -117,9 +123,9 @@ const props = withDefaults(defineProps<{
 .avatar {
 	flex-shrink: 0;
 	display: block;
-	margin: 0 8px 0 0;
-	width: 38px;
-	height: 38px;
+	margin-right: 4px;
+	width: 50px;
+	height: 50px;
 	border-radius: 8px;
 }
 
