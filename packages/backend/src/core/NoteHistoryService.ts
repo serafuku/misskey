@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { DataSource, MoreThan } from 'typeorm';
+import { DataSource, LessThan, MoreThan } from 'typeorm';
 import { MiNote } from '@/models/Note.js';
 import Logger from '@/logger.js';
 import { IdService } from '@/core/IdService.js';
@@ -47,30 +47,34 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 	public async recordHistory (
 		newData: MiNote,
 		originalNote: MiNote,
-		optoins: Option,
+		options: Option,
 	) {
-		const history_data: NoteHistory = {
-			id: this.idService.gen(optoins.updatedAt?.getTime()),
-			noteId: originalNote.id,
-			updatedAt: optoins.updatedAt ?? new Date(),
-			userId: originalNote.userId,
-			fileIds: originalNote.fileIds,
-			attachedFileTypes: originalNote.attachedFileTypes,
-			emojis: originalNote.emojis,
-			text: originalNote.text,
-			visibility: originalNote.visibility,
-			visibleUserIds: originalNote.visibleUserIds,
-		};
-
 		const unlock = await this.appLockService.getApLock(`record-note-history:${originalNote.id}`);
+
 		try {
 			const lastRecord = await this.noteHistoryRepository.findOne({ where: { noteId: originalNote.id }, order: { id: 'DESC' } });
+			const lastRecord_createdAt = lastRecord?.updatedAt ?? this.idService.parse(originalNote.id).date;
+
+			const history_data: NoteHistory = {
+				id: this.idService.gen(new Date().getTime()),
+				noteId: originalNote.id,
+				createdAt: lastRecord_createdAt, // 기록할 내용이 만들어진 시간
+				updatedAt: options.updatedAt ?? new Date(), //대체된 시간
+				userId: originalNote.userId,
+				fileIds: originalNote.fileIds,
+				attachedFileTypes: originalNote.attachedFileTypes,
+				emojis: originalNote.emojis,
+				text: originalNote.text,
+				visibility: originalNote.visibility,
+				visibleUserIds: originalNote.visibleUserIds,
+			};
+
 			if (newData.text === originalNote.text && JSON.stringify(newData.fileIds) === JSON.stringify(originalNote.fileIds)) {
 				this.logger.info(`Skip Record History (The two notes are the same): ${originalNote.id}`);
-			} else if (lastRecord && lastRecord.text === newData.text && JSON.stringify(newData.fileIds) === JSON.stringify(originalNote.fileIds)) {
+			} else if (lastRecord && lastRecord.text === newData.text && JSON.stringify(lastRecord.fileIds) === JSON.stringify(newData.fileIds)) {
 				this.logger.info('Skip Record History (Already inserted)');
 			} else {
-				this.logger.info(`Record History: ${originalNote.id}`);
+				this.logger.info(`Record History for: ${originalNote.id}`);
 				await this.noteHistoryRepository.insert(history_data);
 			}
 		} catch (e) {
@@ -85,15 +89,18 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 		note_id: MiNote['id'],
 		limit: number,
 		sinceId?: NoteHistory['id'],
+		untilId?: NoteHistory['id'],
 	): Promise<NoteHistory[] | null> {
 		this.logger.info(`get history of note ${note_id}`);
 		try {
 			const history = await this.noteHistoryRepository.find({
 				where: {
 					noteId: note_id,
-					...(sinceId ? { id: MoreThan(sinceId) } : {}) },
+					...(sinceId ? { id: MoreThan(sinceId) } : {}),
+					...(untilId ? { id: LessThan(untilId) } : {}),
+				},
 				take: limit,
-				order: { id: 'ASC' },
+				order: { id: 'DESC' },
 			});
 			if (history.length > 0) {
 				return history;
