@@ -193,7 +193,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkButton style="margin: 0 auto;" primary rounded @click="loadHistories">{{ i18n.ts.loadMore }}</MkButton>
 			</div>
 			<MkNoteHistorySub v-for="history in histories" :key="history.id" :history="history" :originalNote="appearNote" :class="$style.reply" :detail="true"/>
-			<div v-if="historiesLoaded" style="padding: 16px">
+			<div v-if="historiesLoaded && !history_list_end" style="padding: 16px">
 				<MkButton style="margin: 0 auto;" primary rounded @click="loadHistories">{{ i18n.ts.loadMore }}</MkButton>
 			</div>
 		</div>
@@ -539,8 +539,6 @@ function blur() {
 }
 
 const repliesLoaded = ref(false);
-const historiesLoaded = ref(false);
-const histories_since_id = ref<Misskey.entities.NoteHistory['id']>('');
 
 function loadReplies() {
 	repliesLoaded.value = true;
@@ -552,18 +550,22 @@ function loadReplies() {
 	});
 }
 
+const historiesLoaded = ref(false);
+const histories_untilId = ref<Misskey.entities.NoteHistory['id']>();
+const history_list_end = ref(false);
+
 function loadHistories() {
-	if (!histories_since_id.value) {
-		histories_since_id.value = appearNote.value.id;
-	} else {
-		histories_since_id.value = histories.value[histories.value.length - 1].id;
-	}
 	historiesLoaded.value = true;
 	misskeyApi('notes/history', {
-		sinceId: histories_since_id.value,
+		...(histories_untilId.value ? { untilId: histories_untilId.value } : {} ),
 		noteId: appearNote.value.id,
 		limit: 5,
 	}).then(res => {
+		if (res.length === 0) {
+			history_list_end.value = true;
+			return;
+		}
+		histories_untilId.value = res[ res.length - 1 ].id;
 		histories.value = histories.value.concat(res);
 	});
 }
