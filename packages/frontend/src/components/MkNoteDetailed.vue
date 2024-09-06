@@ -199,7 +199,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="!historiesLoaded" style="padding: 16px">
 				<MkButton style="margin: 0 auto;" primary rounded @click="loadHistories">{{ i18n.ts.loadMore }}</MkButton>
 			</div>
-			<!-- TODO: CSS적용, raw랑 연동. -->
 			<MkSwitch v-if="historiesLoaded" v-model="history_raw" style="padding: 16px;">raw diff</MkSwitch>
 			<MkNoteHistorySub
 				v-for="(history, index) in histories"
