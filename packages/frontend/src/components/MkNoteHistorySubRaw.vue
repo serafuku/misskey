@@ -5,10 +5,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div>
-	<div>
-		<Mfm v-if="newNote.text && !collapsed" :text="newNote.text" :author="originalNote.user" :nyaize="'respect'" :emojiUrls="newNote.emojis"/>
+	<div v-if="!collapsed">
+		<CodeDiff
+			:context="5"
+			:hideHeader="true"
+			:oldString="oldNote ? oldNote.text : null"
+			:newString="newNote.text"
+		/>
 	</div>
-	<span v-if="props.newNote.files && props.newNote.files.length > 0 && !collapsed">
+	<span v-if="!collapsed && props.newNote.files && props.newNote.files.length > 0">
 		<MkMediaList :mediaList="props.newNote.files"/>
 	</span>
 	<div :class="$style.showButton">
@@ -24,30 +29,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref } from 'vue';
+import { CodeDiff } from 'v-code-diff';
 import * as Misskey from 'misskey-js';
+import { i18n } from '@/i18n';
 import MkMediaList from '@/components/MkMediaList.vue';
-import { i18n } from '@/i18n.js';
-
-const props = defineProps<{
-	newNote: Misskey.entities.NoteHistory;
-	originalNote: Misskey.entities.Note;
-}>();
 
 const collapsed = ref(true);
+const props = defineProps<{
+  oldNote: Misskey.entities.NoteHistory | null;
+  newNote: Misskey.entities.NoteHistory;
+}>();
 </script>
-
 <style lang="scss" module>
-
-.reply {
-	margin-right: 6px;
-	color: var(--accent);
-}
-
-.rp {
-	margin-left: 4px;
-	font-style: oblique;
-	color: var(--renote);
-}
 
 .showMore{
 	width: 100%;
@@ -79,21 +72,5 @@ const collapsed = ref(true);
 	font-size: 0.8em;
 	border-radius: 0.8em;
 	box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
-}
-
-.name {
-	flex-shrink: 1;
-	display: block;
-	margin: 0 .5em 0 0;
-	padding: 0;
-	overflow: hidden;
-	font-size: 1em;
-	font-weight: bold;
-	text-decoration: none;
-	text-overflow: ellipsis;
-
-	&:hover {
-		text-decoration: underline;
-	}
 }
 </style>
