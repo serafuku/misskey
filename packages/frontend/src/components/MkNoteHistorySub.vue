@@ -22,8 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 			</div>
-			<MkNoteHistorySubContent v-if="!raw" :class="$style.body" :newNote="newNote" :originalNote="originalNote"/>
-			<MkNoteHistorySubRaw v-if="raw" :class="$style.body" :oldNote="oldNote" :newNote="newNote"/>
+			<MkNoteHistorySubContent :class="$style.body" :oldNote="oldNote" :newNote="newNote" :originalNote="originalNote" :raw="raw"/>
 		</div>
 	</div>
 </div>
@@ -34,7 +33,6 @@ import { ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkNoteHeader from './MkNoteHeader.vue';
 import MkNoteHistorySubContent from './MkNoteHistorySubContent.vue';
-import MkNoteHistorySubRaw from './MkNoteHistorySubRaw.vue';
 import { userPage } from '@/filters/user.js';
 import { i18n } from '@/i18n.js';
 
