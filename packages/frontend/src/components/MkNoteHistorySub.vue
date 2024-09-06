@@ -17,12 +17,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<span><MkAcct :user="originalNote.user"/></span>
 					</div>
 					<div>
-						<span :class="$style.time">{{ i18n.ts.createdAt }}: <MkTime :time="history.createdAt" mode="detail"/>
+						<span :class="$style.time">{{ i18n.ts.createdAt }}: <MkTime :time="newNote.createdAt" mode="detail"/>
 						</span>
 					</div>
 				</div>
 			</div>
-			<MkNoteHistorySubContent :class="$style.body" :history="history" :originalNote="originalNote"/>
+			<MkNoteHistorySubContent v-if="!raw" :class="$style.body" :newNote="newNote" :originalNote="originalNote"/>
+			<MkNoteHistorySubRaw v-if="raw" :class="$style.body" :oldNote="oldNote" :newNote="newNote"/>
 		</div>
 	</div>
 </div>
@@ -33,13 +34,16 @@ import { ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkNoteHeader from './MkNoteHeader.vue';
 import MkNoteHistorySubContent from './MkNoteHistorySubContent.vue';
+import MkNoteHistorySubRaw from './MkNoteHistorySubRaw.vue';
 import { userPage } from '@/filters/user.js';
 import { i18n } from '@/i18n.js';
 
 const props = withDefaults(defineProps<{
-	history: Misskey.entities.NoteHistory;
+	oldNote: Misskey.entities.NoteHistory | null;
+	newNote: Misskey.entities.NoteHistory;
 	originalNote: Misskey.entities.Note;
 	detail?: boolean;
+	raw:boolean;
 
 	// how many notes are in between this one and the note being viewed in detail
 	index?: number;
