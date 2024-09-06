@@ -573,6 +573,23 @@ function loadHistories() {
 		noteId: appearNote.value.id,
 		limit: 5,
 	}).then(res => {
+		if (histories.value.length === 0) {
+			const current_note = appearNote.value;
+			const current_version: Misskey.entities.NoteHistory = {
+				id: current_note.id,
+				noteId: current_note.id,
+				createdAt: current_note.createdAt,
+				updatedAt: current_note.createdAt,
+				userId: current_note.userId,
+				text: current_note.text,
+				fileIds: current_note.fileIds,
+				files: current_note.files,
+				visibility: current_note.visibility,
+				visibleUserIds: current_note.visibleUserIds,
+				emojis: current_note.emojis,
+			};
+			histories.value.push(current_version);
+		}
 		if (res.length === 0) {
 			history_list_end.value = true;
 			return;
