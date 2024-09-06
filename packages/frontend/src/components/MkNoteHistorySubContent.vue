@@ -6,10 +6,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div>
 	<div>
-		<Mfm v-if="history.text && !collapsed" :text="history.text" :author="originalNote.user" :nyaize="'respect'" :emojiUrls="history.emojis"/>
+		<Mfm v-if="newNote.text && !collapsed" :text="newNote.text" :author="originalNote.user" :nyaize="'respect'" :emojiUrls="newNote.emojis"/>
 	</div>
-	<span v-if="props.history.files && props.history.files.length > 0 && !collapsed">
-		<MkMediaList :mediaList="props.history.files"/>
+	<span v-if="props.newNote.files && props.newNote.files.length > 0 && !collapsed">
+		<MkMediaList :mediaList="props.newNote.files"/>
 	</span>
 	<div :class="$style.showButton">
 		<button v-if="collapsed" :class="$style.showMore" class="_button" @click="collapsed = false">
@@ -29,7 +29,7 @@ import MkMediaList from '@/components/MkMediaList.vue';
 import { i18n } from '@/i18n.js';
 
 const props = defineProps<{
-	history: Misskey.entities.NoteHistory;
+	newNote: Misskey.entities.NoteHistory;
 	originalNote: Misskey.entities.Note;
 }>();
 
