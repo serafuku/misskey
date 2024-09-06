@@ -5,8 +5,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div>
-	<div>
-		<Mfm v-if="newNote.text && !collapsed" :text="newNote.text" :author="originalNote.user" :nyaize="'respect'" :emojiUrls="newNote.emojis"/>
+	<div v-if="newNote.text && !collapsed">
+		<Mfm
+			v-if="!raw"
+			:text="newNote.text"
+			:author="originalNote.user"
+			:nyaize="'respect'"
+			:emojiUrls="newNote.emojis"
+		/>
+		<CodeDiff
+			v-if="raw"
+			:context="5"
+			:hideHeader="true"
+			:oldString="oldNote ? oldNote.text : null"
+			:newString="newNote.text"
+		/>
 	</div>
 	<span v-if="props.newNote.files && props.newNote.files.length > 0 && !collapsed">
 		<MkMediaList :mediaList="props.newNote.files"/>
@@ -25,12 +38,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { ref } from 'vue';
 import * as Misskey from 'misskey-js';
+import { CodeDiff } from 'v-code-diff';
 import MkMediaList from '@/components/MkMediaList.vue';
 import { i18n } from '@/i18n.js';
 
 const props = defineProps<{
+	oldNote: Misskey.entities.NoteHistory | null;
 	newNote: Misskey.entities.NoteHistory;
 	originalNote: Misskey.entities.Note;
+	raw:boolean;
 }>();
 
 const collapsed = ref(true);
