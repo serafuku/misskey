@@ -1458,8 +1458,6 @@ _abuseUserReport:
   resolveTutorial: "If the report's content is legitimate, select \"Accept\" to mark it as resolved.\nIf the report's content is illegitimate, select \"Reject\" to ignore it."
 noteUpdatedAt: "Edited: {date} {time}"
 editHistory: "Edit history"
-fold: "Expand"
-unfold: "Collapse"
 
 _delivery:
   status: "Delivery status"
