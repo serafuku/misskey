@@ -202,6 +202,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				:class="$style.reply"
 				:detail="true"
 				:raw="history_raw"
+				:index="index"
 			/>
 			<div v-if="historiesLoaded && !history_list_end" style="padding: 16px">
 				<MkButton style="margin: 0 auto;" primary rounded @click="loadHistories">{{ i18n.ts.loadMore }}</MkButton>
