@@ -73,7 +73,7 @@ const props = defineProps<{
 	// 현재 표시하는 노트의 인덱스
 	index: number;
 }>();
-const collapsed = ref(false);
+const collapsed = ref(true);
 
 </script>
 
