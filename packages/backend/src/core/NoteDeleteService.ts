@@ -126,7 +126,6 @@ export class NoteDeleteService {
 		}
 	}
 
-
 	@bindThis
 	private async getMentionedRemoteUsers(note: MiNote) {
 		const where = [] as any[];
