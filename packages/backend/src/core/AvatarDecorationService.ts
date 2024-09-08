@@ -6,6 +6,7 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { IsNull } from 'typeorm';
+import { UserDetailedNotMe } from 'misskey-js/entities.js';
 import type { AvatarDecorationsRepository, InstancesRepository, UsersRepository, MiAvatarDecoration, MiUser } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -138,8 +139,8 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 			body: JSON.stringify({ 'username': user.username }),
 		});
 
-		const userData: any = await res.json();
-		const userAvatarDecorations = userData.avatarDecorations ?? undefined;
+		const userData = await res.json() as Partial<UserDetailedNotMe> | undefined;
+		const userAvatarDecorations = userData?.avatarDecorations;
 
 		if (!userAvatarDecorations || userAvatarDecorations.length === 0) {
 			const updates = {} as Partial<MiUser>;
@@ -155,29 +156,29 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({}),
 		});
-		const allDecorations: any = await allRes.json();
+		const remoteDecorations = (await allRes.json() as Partial<MiAvatarDecoration[]> | undefined) ?? [];
 		const updates = {} as Partial<MiUser>;
 		updates.avatarDecorations = [];
-		for (const avatarDecoration of userAvatarDecorations) {
+		for (const userAvatarDecoration of userAvatarDecorations) {
 			let name;
 			let description;
-			const avatarDecorationId = avatarDecoration.id;
-			for (const decoration of allDecorations) {
-				if (decoration.id === avatarDecorationId) {
-					name = decoration.name;
-					description = decoration.description;
+			const userAvatarDecorationId = userAvatarDecoration.id;
+			for (const remoteDecoration of remoteDecorations) {
+				if (remoteDecoration?.id === userAvatarDecorationId) {
+					name = remoteDecoration.name;
+					description = remoteDecoration.description;
 					break;
 				}
 			}
 			const existingDecoration = await this.avatarDecorationsRepository.findOneBy({
 				host: userHost,
-				remoteId: avatarDecorationId,
+				remoteId: userAvatarDecorationId,
 			});
 			const decorationData = {
 				name: name,
 				description: description,
-				url: this.getProxiedUrl(avatarDecoration.url, 'static'),
-				remoteId: avatarDecorationId,
+				url: this.getProxiedUrl(userAvatarDecoration.url),
+				remoteId: userAvatarDecorationId,
 				host: userHost,
 			};
 			if (existingDecoration == null) {
@@ -189,15 +190,15 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 			}
 			const findDecoration = await this.avatarDecorationsRepository.findOneBy({
 				host: userHost,
-				remoteId: avatarDecorationId,
+				remoteId: userAvatarDecorationId,
 			});
 
 			updates.avatarDecorations.push({
 				id: findDecoration?.id ?? '',
-				angle: avatarDecoration.angle ?? 0,
-				flipH: avatarDecoration.flipH ?? false,
-				offsetX: avatarDecoration.offsetX ?? 0,
-				offsetY: avatarDecoration.offsetY ?? 0,
+				angle: userAvatarDecoration.angle ?? 0,
+				flipH: userAvatarDecoration.flipH ?? false,
+				offsetX: userAvatarDecoration.offsetX ?? 0,
+				offsetY: userAvatarDecoration.offsetY ?? 0,
 			});
 		}
 		await this.usersRepository.update({ id: user.id }, updates);
