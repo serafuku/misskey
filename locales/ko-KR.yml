@@ -1253,6 +1253,16 @@ noteUpdatedAt: "편집됨: {date} {time}"
 editHistory: "편집 기록"
 fold: "펼치기"
 unfold: "접기"
+timeBomb: "기간제한 노트"
+
+_timeBomb:
+  expiration: "노트 유지 기한"
+  infinite: "무기한"
+  at: "일시 지정"
+  after: "기간 지정"
+  deadlineDate: "기한"
+  deadlineTime: "시간"
+  duration: "기간"
 
 _delivery:
   status: "전송 상태"

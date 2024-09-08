@@ -5084,6 +5084,40 @@ export interface Locale extends ILocale {
      * 閉じる
      */
     "unfold": string;
+    /**
+     * 期限ノート
+     */
+    "timeBomb": string;
+    "_timeBomb": {
+        /**
+         * 期限
+         */
+        "expiration": string;
+        /**
+         * 無期限
+         */
+        "infinite": string;
+        /**
+         * 日時指定
+         */
+        "at": string;
+        /**
+         * 経過指定
+         */
+        "after": string;
+        /**
+         * 期日
+         */
+        "deadlineDate": string;
+        /**
+         * 時間
+         */
+        "deadlineTime": string;
+        /**
+         * 期間
+         */
+        "duration": string;
+    };
     "_delivery": {
         /**
          * 配信状態

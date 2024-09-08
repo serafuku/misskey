@@ -1267,6 +1267,16 @@ noteUpdatedAt: "編集済み: {date} {time}"
 editHistory: "修正履歴"
 fold: "開く"
 unfold: "閉じる"
+timeBomb: "期限ノート"
+
+_timeBomb:
+  expiration: "期限"
+  infinite: "無期限"
+  at: "日時指定"
+  after: "経過指定"
+  deadlineDate: "期日"
+  deadlineTime: "時間"
+  duration: "期間"
 
 _delivery:
   status: "配信状態"
