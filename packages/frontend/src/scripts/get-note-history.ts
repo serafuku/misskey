@@ -15,11 +15,11 @@ export async function getNoteHistory(props: {
 }) {
 	const cleanups = [] as (() => void)[];
 
-	const history:NoteHistory[] = await misskeyApi('notes/history', {noteId: props.note.id})
+	const history:NoteHistory[] = await misskeyApi('notes/history', { noteId: props.note.id });
 
 	const menu: MenuItem[] = [{
 		text: history[0].updatedAt
-	}]
+	}];
 
 	const cleanup = () => {
 		if (_DEV_) console.log('note menu cleanup', cleanups);
