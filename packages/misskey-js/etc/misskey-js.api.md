@@ -2998,7 +2998,8 @@ type SigninWithPasskeyRequest = {
 type SigninWithPasskeyResponse = {
     option?: object;
     context?: string;
-} | SigninResponse;
+    signinResponse?: SigninResponse;
+};
 
 // @public (undocumented)
 type SignupPendingRequest = {
