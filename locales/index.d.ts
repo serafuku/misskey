@@ -5084,6 +5084,10 @@ export interface Locale extends ILocale {
      * 閉じる
      */
     "unfold": string;
+    /**
+     * パスキーでログイン
+     */
+    "signinWithPasskey": string;
     "_delivery": {
         /**
          * 配信状態

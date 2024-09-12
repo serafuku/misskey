@@ -1267,6 +1267,7 @@ noteUpdatedAt: "編集済み: {date} {time}"
 editHistory: "修正履歴"
 fold: "開く"
 unfold: "閉じる"
+signinWithPasskey: "パスキーでログイン"
 
 _delivery:
   status: "配信状態"

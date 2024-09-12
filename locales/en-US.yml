@@ -1265,6 +1265,8 @@ createdLists: "Created lists"
 createdAntennas: "Created antennas"
 noteUpdatedAt: "Edited: {date} {time}"
 editHistory: "Edit history"
+signinWithPasskey: "Login With Passkey"
+
 _delivery:
   status: "Delivery status"
   stop: "Suspended"

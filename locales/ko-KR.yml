@@ -1253,6 +1253,7 @@ noteUpdatedAt: "편집됨: {date} {time}"
 editHistory: "편집 기록"
 fold: "펼치기"
 unfold: "접기"
+signinWithPasskey: "패스키로 로그인"
 
 _delivery:
   status: "전송 상태"
