@@ -1268,6 +1268,9 @@ editHistory: "修正履歴"
 fold: "開く"
 unfold: "閉じる"
 signinWithPasskey: "パスキーでログイン"
+unknownWebAuthnKey: "登録していないパスキーです。"
+verificationFailed: "パスキー検証に失敗しました。"
+passwordlessLoginDisabled: "パスキー検証には成功しましたが、パスワードレスログインが無効にしています。"
 
 _delivery:
   status: "配信状態"
