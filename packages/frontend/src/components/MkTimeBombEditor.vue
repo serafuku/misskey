@@ -42,8 +42,7 @@ import { formatDateTimeString } from '@/scripts/format-time-string';
 import { addTime } from '@/scripts/time';
 
 export type timeBombValue = {
-	timeBombAt: number | null;
-	timeBombAfter: number | null;
+	timeBombAt: number | undefined;
 }
 
 const props = defineProps<{
@@ -79,27 +78,24 @@ function get(): timeBombValue {
 	const calcAfter = () => {
 		let base = parseInt(after.value.toString());
 		switch (unit.value) {
-			// @ts-expect-error fallthrough
-			case 'day': base *= 24;
-			// @ts-expect-error fallthrough
-			case 'hour': base *= 60;
-			// @ts-expect-error fallthrough
-			case 'minute': base *= 60;
-			// eslint-disable-next-line no-fallthrough
-			case 'second': return base *= 1000;
-			default: return null;
+			case 'day': {return base += 1000 * 60 * 60 * 24; }
+			case 'hour': {return base += 1000 * 60 * 60; }
+			case 'minute': {return base += 1000 * 60; }
+			case 'second': {return base *= 1000; }
 		}
 	};
 
 	return {
-		timeBombAt: expiration.value === 'at' ? calcAt() : null,
-		timeBombAfter: expiration.value === 'after' ? calcAfter() : null,
+		timeBombAt: expiration.value === 'at' ? calcAt() : calcAfter(),
 	};
 }
 
 watch([expiration, atDate, atTime, after, unit], () => emit('update:modelValue', get()), {
 	deep: true,
 });
+
+console.log([]);
+
 </script>
 <style lang="css" module>
 	.root {

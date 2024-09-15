@@ -83,6 +83,7 @@ import { Config } from '@/config.js';
 import MisskeyLogger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { NoteHistory } from './models/NoteHistory.js';
+import { NoteTimeBomb } from './models/NoteTimeBomb.js';
 
 pg.types.setTypeParser(20, Number);
 
@@ -200,6 +201,7 @@ export const entities = [
 	MiBubbleGameRecord,
 	MiReversiGame,
 	NoteHistory,
+	NoteTimeBomb,
 	...charts,
 ];
 

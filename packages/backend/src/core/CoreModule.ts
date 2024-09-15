@@ -152,6 +152,7 @@ import { QueueService } from './QueueService.js';
 import { LoggerService } from './LoggerService.js';
 import { NoteHistorySerivce } from './NoteHistoryService.js';
 import { NoteHistoryEntityService } from './entities/NoteHistoryEntityService.js';
+import { NoteTimeBombService } from './NoteTimeBombService.js';
 import type { Provider } from '@nestjs/common';
 
 //#region 文字列ベースでのinjection用(循環参照対応のため)
@@ -450,6 +451,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ApQuestionService,
 		QueueService,
 		NoteHistorySerivce,
+		NoteTimeBombService,
 
 		//#region 文字列ベースでのinjection用(循環参照対応のため)
 		$LoggerService,
@@ -743,6 +745,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ApQuestionService,
 		QueueService,
 		NoteHistorySerivce,
+		NoteTimeBombService,
 
 		//#region 文字列ベースでのinjection用(循環参照対応のため)
 		$LoggerService,

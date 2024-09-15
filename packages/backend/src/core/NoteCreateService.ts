@@ -14,7 +14,7 @@ import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mf
 import { extractHashtags } from '@/misc/extract-hashtags.js';
 import type { IMentionedRemoteUsers } from '@/models/Note.js';
 import { MiNote } from '@/models/Note.js';
-import type { ChannelFollowingsRepository, ChannelsRepository, FollowingsRepository, InstancesRepository, MiFollowing, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserListMembershipsRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { ChannelFollowingsRepository, ChannelsRepository, FollowingsRepository, InstancesRepository, MiFollowing, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserListMembershipsRepository, UserProfilesRepository, UsersRepository, NoteTimeBombRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiApp } from '@/models/App.js';
 import { concat } from '@/misc/prelude/array.js';
@@ -60,6 +60,7 @@ import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { NoteTimeBomb } from '@/models/NoteTimeBomb.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention';
 
@@ -147,6 +148,7 @@ type Option = {
 	uri?: string | null;
 	url?: string | null;
 	app?: MiApp | null;
+	timeBombAt?: NoteTimeBomb | null;
 };
 
 @Injectable()
@@ -192,6 +194,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		@Inject(DI.channelFollowingsRepository)
 		private channelFollowingsRepository: ChannelFollowingsRepository,
+
+		@Inject(DI.noteTimeBombRepository)
+		private noteTimebombRepository: NoteTimeBombRepository,
 
 		private userEntityService: UserEntityService,
 		private noteEntityService: NoteEntityService,
@@ -459,6 +464,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 				} as IMentionedRemoteUsers[0];
 			}));
 		}
+		console.log(data.timeBombAt);
+
 
 		// 投稿を作成
 		try {
@@ -481,6 +488,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 					await transactionalEntityManager.insert(MiPoll, poll);
 				});
+			} else if (data.timeBombAt) {
+				await this.noteTimebombRepository.insert(data.timeBombAt)
+				.then(() => this.notesRepository.insert(insert));
 			} else {
 				await this.notesRepository.insert(insert);
 			}

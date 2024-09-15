@@ -79,6 +79,7 @@ import {
 	MiWebhook,
 } from './_.js';
 import { NoteHistory } from './NoteHistory.js';
+import { NoteTimeBomb } from './NoteTimeBomb.js';
 import type { DataSource } from 'typeorm';
 import type { Provider } from '@nestjs/common';
 
@@ -502,6 +503,12 @@ const $reversiGamesRepository: Provider = {
 	inject: [DI.db],
 };
 
+const $noteTimeBombRepository: Provider = {
+	provide: DI.noteTimeBombRepository,
+	useFactory: (db: DataSource) => db.getRepository(NoteTimeBomb).extend(miRepository as MiRepository<NoteTimeBomb>),
+	inject: [DI.db],
+}
+
 @Module({
 	imports: [],
 	providers: [
@@ -575,6 +582,7 @@ const $reversiGamesRepository: Provider = {
 		$bubbleGameRecordsRepository,
 		$reversiGamesRepository,
 		$noteHistoryRepository,
+		$noteTimeBombRepository,
 	],
 	exports: [
 		$usersRepository,
@@ -647,6 +655,7 @@ const $reversiGamesRepository: Provider = {
 		$bubbleGameRecordsRepository,
 		$reversiGamesRepository,
 		$noteHistoryRepository,
+		$noteTimeBombRepository,
 	],
 })
 export class RepositoryModule {
