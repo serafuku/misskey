@@ -285,6 +285,7 @@ function loginFailed(err: any): void {
 				title: i18n.ts.loginFailed,
 				text: i18n.ts.passwordlessLoginDisabled,
 			})
+			break;
 		}
 		default: {
 			console.error(err);
