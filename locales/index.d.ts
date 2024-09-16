@@ -5084,6 +5084,22 @@ export interface Locale extends ILocale {
      * 閉じる
      */
     "unfold": string;
+    /**
+     * パスキーでログイン
+     */
+    "signinWithPasskey": string;
+    /**
+     * 登録していないパスキーです。
+     */
+    "unknownWebAuthnKey": string;
+    /**
+     * パスキー検証に失敗しました。
+     */
+    "verificationFailed": string;
+    /**
+     * パスキー検証には成功しましたが、パスワードレスログインが無効にしています。
+     */
+    "passwordlessLoginDisabled": string;
     "_delivery": {
         /**
          * 配信状態
