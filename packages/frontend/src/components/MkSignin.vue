@@ -284,7 +284,7 @@ function loginFailed(err: any): void {
 				type: 'error',
 				title: i18n.ts.loginFailed,
 				text: i18n.ts.passwordlessLoginDisabled,
-			})
+			});
 			break;
 		}
 		default: {
