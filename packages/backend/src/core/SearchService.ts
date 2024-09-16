@@ -213,9 +213,15 @@ export class SearchService {
 			} else if (opts.channelId) {
 				query.andWhere('note.channelId = :channelId', { channelId: opts.channelId });
 			}
+			if (q.length > 2) {
+				// Will Use Pg_trgm index
+				query.andWhere('note.text ILIKE :q', { q: `%${ sqlLikeEscape(q) }%` });
+			} else {
+				// Will Use Pg_bigm index
+				query.andWhere('note.text LIKE :q', { q: `%${ sqlLikeEscape(q) }%` });
+			}
 
 			query
-				.andWhere('note.text ILIKE :q', { q: `%${ sqlLikeEscape(q) }%` })
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
