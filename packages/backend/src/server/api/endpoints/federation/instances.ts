@@ -14,9 +14,7 @@ import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
 export const meta = {
 	tags: ['federation'],
 
-	requireCredential: true,
-	kind: 'read:federation',
-
+	requireCredential: false,
 	allowGet: true,
 	cacheSec: 3600,
 
@@ -79,6 +77,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private metaService: MetaService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			if (!me) {
+				return [];
+			}
 			const query = this.instancesRepository.createQueryBuilder('instance');
 
 			switch (ps.sort) {
