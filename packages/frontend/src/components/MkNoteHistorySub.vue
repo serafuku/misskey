@@ -22,8 +22,35 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 			</div>
-			<MkNoteHistorySubContent v-if="!raw" :class="$style.body" :newNote="newNote" :originalNote="originalNote"/>
-			<MkNoteHistorySubRaw v-if="raw" :class="$style.body" :oldNote="oldNote" :newNote="newNote"/>
+			<div>
+				<div v-if="newNote.text && !collapsed">
+					<Mfm
+						v-if="!raw"
+						:text="newNote.text"
+						:author="originalNote.user"
+						:nyaize="'respect'"
+						:emojiUrls="newNote.emojis"
+					/>
+					<CodeDiff
+						v-if="raw"
+						:context="5"
+						:hideHeader="true"
+						:oldString="oldNote ? oldNote.text : null"
+						:newString="newNote.text"
+					/>
+				</div>
+				<span v-if="props.newNote.files && props.newNote.files.length > 0 && !collapsed">
+					<MkMediaList :mediaList="props.newNote.files"/>
+				</span>
+				<div :class="$style.showButton">
+					<button v-if="collapsed" :class="$style.showMore" class="_button" @click="collapsed = false">
+						<span :class="$style.showMoreLabel">{{ i18n.ts.fold }}</span>
+					</button>
+					<button v-else-if="!collapsed" :class="$style.showLess" class="_button" @click="collapsed = true">
+						<span :class="$style.showLessLabel">{{ i18n.ts.unfold }}</span>
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -32,9 +59,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { ref } from 'vue';
 import * as Misskey from 'misskey-js';
-import MkNoteHeader from './MkNoteHeader.vue';
-import MkNoteHistorySubContent from './MkNoteHistorySubContent.vue';
-import MkNoteHistorySubRaw from './MkNoteHistorySubRaw.vue';
+import { CodeDiff } from 'v-code-diff';
 import { userPage } from '@/filters/user.js';
 import { i18n } from '@/i18n.js';
 
@@ -48,6 +73,7 @@ const props = defineProps<{
 	// 현재 표시하는 노트의 인덱스
 	index: number;
 }>();
+const collapsed = ref(true);
 
 </script>
 
@@ -178,5 +204,64 @@ const props = defineProps<{
 	border: 1px solid var(--divider);
 	margin: 8px 8px 0 8px;
 	border-radius: 8px;
+}
+
+.reply {
+	margin-right: 6px;
+	color: var(--accent);
+}
+
+.rp {
+	margin-left: 4px;
+	font-style: oblique;
+	color: var(--renote);
+}
+
+.showMore{
+	width: 100%;
+	position: sticky;
+	bottom: calc(var(--stickyBottom, 0px) + 14px);
+}
+
+.showMoreLabel {
+	display: inline-block;
+	background: var(--popup);
+	padding: 0.6em 8em;
+	font-size: 0.8em;
+	border-radius: 0.8em;
+	box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+}
+
+.showLess {
+	width: 100%;
+	margin-top: 14px;
+	position: sticky;
+	bottom: calc(var(--stickyBottom, 0px) + 14px);
+}
+
+.showLessLabel {
+	display: inline-block;
+	background: var(--popup);
+	padding: 0.6em 8em;
+	margin-top: 3em;
+	font-size: 0.8em;
+	border-radius: 0.8em;
+	box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+}
+
+.name {
+	flex-shrink: 1;
+	display: block;
+	margin: 0 .5em 0 0;
+	padding: 0;
+	overflow: hidden;
+	font-size: 1em;
+	font-weight: bold;
+	text-decoration: none;
+	text-overflow: ellipsis;
+
+	&:hover {
+		text-decoration: underline;
+	}
 }
 </style>

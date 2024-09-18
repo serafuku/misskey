@@ -13,8 +13,7 @@ import { DI } from '@/di-symbols.js';
 export const meta = {
 	tags: ['federation'],
 
-	requireCredential: true,
-	kind: 'read:federation',
+	requireCredential: false,
 
 	res: {
 		type: 'object',
@@ -44,6 +43,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const instance = await this.instancesRepository
 				.findOneBy({ host: this.utilityService.toPuny(ps.host) });
 
+			if (!me) {
+				return null;
+			}
 			return instance ? await this.instanceEntityService.pack(instance, me) : null;
 		});
 	}
