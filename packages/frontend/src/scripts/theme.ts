@@ -99,6 +99,12 @@ export function applyTheme(theme: Theme, persist = true) {
 
 	document.documentElement.style.setProperty('color-scheme', colorScheme);
 
+	if (colorScheme === "light") {
+		document.documentElement.style.setProperty('--visitorDashboardColorFallback', 'rgba(255, 255, 255, 0.85)');
+	} else {
+		document.documentElement.style.setProperty('--visitorDashboardColorFallback', 'rgba(45, 45, 45, 0.85)');
+	}
+
 	if (persist) {
 		miLocalStorage.setItem('theme', JSON.stringify(props));
 		miLocalStorage.setItem('colorScheme', colorScheme);
