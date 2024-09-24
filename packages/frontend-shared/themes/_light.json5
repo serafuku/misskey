@@ -87,6 +87,7 @@
 		X11: 'rgba(0, 0, 0, 0.1)',
 		X12: 'rgba(0, 0, 0, 0.1)',
 		X13: 'rgba(0, 0, 0, 0.15)',
+		visitorDashboardColor: 'rgba(255,255,255,0.85)',
 	},
 
 	codeHighlighter: {
