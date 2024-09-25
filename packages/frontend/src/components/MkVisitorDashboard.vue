@@ -106,7 +106,7 @@ function showMenu(ev: MouseEvent) {
 
 .panel {
 	position: relative;
-	background: var(--visitorDashboardColor, var(--visitorDashboardColorFallback));
+	background: var(--visitorDashboardColor);
 	border-radius: var(--radius);
 	box-shadow: 0 12px 32px rgb(0 0 0 / 25%);
 	backdrop-filter: blur(1px);
