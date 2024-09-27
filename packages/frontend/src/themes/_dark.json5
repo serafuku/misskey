@@ -93,6 +93,7 @@
 		X15: ':alpha<0<@panel',
 		X16: ':alpha<0.7<@panel',
 		X17: ':alpha<0.8<@bg',
+		visitorDashboardColor: 'rgba(0,0,0,0.75)',
 	},
 
 	codeHighlighter: {
