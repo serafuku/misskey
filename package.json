@@ -1,6 +1,6 @@
 {
 	"name": "misskey",
-	"version": "2024.8.0+munochi.9",
+	"version": "2024.8.0+munochi.10",
 	"codename": "nasubi",
 	"repository": {
 		"type": "git",
