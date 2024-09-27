@@ -390,6 +390,7 @@ export class ApPersonService implements OnModuleInit {
 						keyPem: person.publicKey.publicKeyPem,
 					}));
 				}
+				await this.updateFollowCount(person);
 			});
 		} catch (e) {
 			// duplicate key error
@@ -583,6 +584,8 @@ export class ApPersonService implements OnModuleInit {
 			location: person['vcard:Address'] ?? null,
 		});
 
+		await this.updateFollowCount(person);
+
 		this.globalEventService.publishInternalEvent('remoteUserUpdated', { id: exist.id });
 
 		// ハッシュタグ更新
@@ -751,6 +754,56 @@ export class ApPersonService implements OnModuleInit {
 		return 'ok';
 	}
 
+	/** 
+	* Update Remote user's Following/Followers count 
+	* If it is private, set it to -1.
+	*/
+	@bindThis
+	private async updateFollowCount(person: IActor) {
+		const resolver = this.apResolverService.createResolver();
+
+		const uri = person.id;
+		if (!uri) return;
+
+		if (person.following) {
+			try {
+				const collection = typeof person.following === 'string' ? await resolver.resolveCollection(person.following) : person.following;
+				const followingCount = collection.totalItems;
+				this.logger.info(`Update followingCount ${followingCount} (user: ${uri})`);
+				const update: Partial<MiUser> = { followingCount: followingCount };
+				await this.usersRepository.update({ uri: uri }, update);
+			} catch (err) {
+				if (!(err instanceof StatusError) || err.isRetryable) {
+					this.logger.error('error occurred while fetching following/followers collection', { stack: err });
+					// Do not update the count on transient errors.
+				} else {
+					this.logger.info(`Update followingCount ${-1} (user: ${uri})`);
+					const update: Partial<MiUser> = { followingCount: -1 };
+					await this.usersRepository.update({ uri: uri }, update);
+				}
+			}
+		}
+
+		if (person.followers) {
+			try {
+				const collection = typeof person.followers === 'string' ? await resolver.resolveCollection(person.followers) : person.followers;
+				const followersCount = collection.totalItems;
+				this.logger.info(`Update followersCount to ${followersCount} (user: ${uri})`);
+				const update: Partial<MiUser> = { followersCount: followersCount };
+				await this.usersRepository.update({ uri: uri }, update);
+			} catch (err) {
+				if (!(err instanceof StatusError) || err.isRetryable) {
+					this.logger.error('error occurred while fetching following/followers collection', { stack: err });
+					// Do not update the count on transient errors.
+				} else {
+					this.logger.info(`Update followersCount to ${-1} (user: ${uri})`);
+					const update: Partial<MiUser> = { followersCount: -1 };
+					await this.usersRepository.update({ uri: uri }, update);
+				}
+			}
+		}
+	}
+	
 	@bindThis
 	private async isPublicCollection(collection: string | ICollection | IOrderedCollection | undefined, resolver: Resolver): Promise<boolean> {
 		if (collection) {
