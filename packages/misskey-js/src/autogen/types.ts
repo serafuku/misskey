@@ -1627,14 +1627,14 @@ export type paths = {
      * federation/instances
      * @description No description provided.
      *
-     * **Credential required**: *Yes* / **Permission**: *read:federation*
+     * **Credential required**: *No*
      */
     get: operations['federation___instances'];
     /**
      * federation/instances
      * @description No description provided.
      *
-     * **Credential required**: *Yes* / **Permission**: *read:federation*
+     * **Credential required**: *No*
      */
     post: operations['federation___instances'];
   };
@@ -1643,7 +1643,7 @@ export type paths = {
      * federation/show-instance
      * @description No description provided.
      *
-     * **Credential required**: *Yes* / **Permission**: *read:federation*
+     * **Credential required**: *No*
      */
     post: operations['federation___show-instance'];
   };
@@ -15298,7 +15298,7 @@ export type operations = {
    * federation/instances
    * @description No description provided.
    *
-   * **Credential required**: *Yes* / **Permission**: *read:federation*
+   * **Credential required**: *No*
    */
   federation___instances: {
     requestBody: {
@@ -15365,7 +15365,7 @@ export type operations = {
    * federation/show-instance
    * @description No description provided.
    *
-   * **Credential required**: *Yes* / **Permission**: *read:federation*
+   * **Credential required**: *No*
    */
   'federation___show-instance': {
     requestBody: {
