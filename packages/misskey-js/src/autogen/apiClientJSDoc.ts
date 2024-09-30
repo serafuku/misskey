@@ -1868,7 +1868,7 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
-     * **Credential required**: *Yes* / **Permission**: *read:federation*
+     * **Credential required**: *No*
      */
     request<E extends 'federation/instances', P extends Endpoints[E]['req']>(
       endpoint: E,
@@ -1879,7 +1879,7 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
-     * **Credential required**: *Yes* / **Permission**: *read:federation*
+     * **Credential required**: *No*
      */
     request<E extends 'federation/show-instance', P extends Endpoints[E]['req']>(
       endpoint: E,
