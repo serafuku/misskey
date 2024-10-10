@@ -85,13 +85,11 @@ export class PushNotificationService implements OnApplicationShutdown {
 			this.meta.swPrivateKey);
 
 		const subscriptions = await this.subscriptionsCache.fetch(userId);
-		this.swLogger.info('start push Notification to' + userId);
 
 		for (const subscription of subscriptions) {
 			if ([
 				'readAllNotifications',
 			].includes(type) && !subscription.sendReadMessage) {
-				this.swLogger.info('Skip readAllNotifications');
 				continue;
 			}
 
@@ -103,7 +101,7 @@ export class PushNotificationService implements OnApplicationShutdown {
 				},
 			};
 
-			this.swLogger.info('Sending push to Subscription: ' + JSON.stringify(pushSubscription));
+			this.swLogger.info(`Sending push to User: ${userId} Subscription: ${JSON.stringify(pushSubscription)} `);
 
 			push.sendNotification(pushSubscription, JSON.stringify({
 				type,
@@ -126,7 +124,7 @@ export class PushNotificationService implements OnApplicationShutdown {
 					}).then(() => {
 						this.refreshCache(userId);
 					});
-					this.swLogger.warn('Got 410, Delete swSubscription');
+					this.swLogger.warn('Got 410, Delete Subscription');
 				} else {
 					this.swLogger.warn('Error code' + err.statusCode);
 					this.swLogger.warn(err.headers);
