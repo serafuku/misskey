@@ -20,9 +20,11 @@ export class NoteHistory {
 	@JoinColumn()
 	public note?: MiNote | null;
 
+	/** 내용을 백업할 노트가 만들어졌던 시간 */
 	@Column('timestamp with time zone')
 	public createdAt: Date;
 
+	/** 새로운 내용으로 대체된 시간 (이 히스토리가 기록된 시간) */
 	@Column('timestamp with time zone')
 	public updatedAt: Date;
 

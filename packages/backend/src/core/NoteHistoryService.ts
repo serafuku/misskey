@@ -4,13 +4,13 @@
  */
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { DataSource, LessThan, MoreThan } from 'typeorm';
+import { LessThan, MoreThan } from 'typeorm';
 import { MiNote } from '@/models/Note.js';
 import Logger from '@/logger.js';
 import { IdService } from '@/core/IdService.js';
 
 import { DI } from '@/di-symbols.js';
-import type { NoteHistoryRepository, UsersRepository } from '@/models/_.js';
+import type { NoteHistoryRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { NoteHistory } from '@/models/NoteHistory.js';
 import { LoggerService } from './LoggerService.js';
@@ -25,12 +25,6 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 	#shutdownController = new AbortController();
 	private logger: Logger;
 	constructor (
-		@Inject(DI.db)
-		private db: DataSource,
-
-		@Inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
 		@Inject(DI.noteHistoryRepository)
 		private noteHistoryRepository: NoteHistoryRepository,
 
@@ -43,6 +37,12 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 		this.logger = this.loggerService.getLogger('NoteHistorySerivce');
 	}
 
+	/**
+	 * Back up contents of the current note to the history record.
+	 * @param newData Update된 노트
+	 * @param originalNote Update 되기 전의 원래 노트 내용
+	 * @param options 옵션
+	 */
 	@bindThis
 	public async recordHistory (
 		newData: MiNote,
@@ -52,14 +52,15 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 		const unlock = await this.appLockService.getApLock(`record-note-history:${originalNote.id}`);
 
 		try {
+			//이전에 이미 기록된 히스토리가 있는 경우 가장 최근의 히스토리를 가져오기
 			const lastRecord = await this.noteHistoryRepository.findOne({ where: { noteId: originalNote.id }, order: { id: 'DESC' } });
 			const lastRecord_createdAt = lastRecord?.updatedAt ?? this.idService.parse(originalNote.id).date;
 
 			const history_data: NoteHistory = {
 				id: this.idService.gen(new Date().getTime()),
 				noteId: originalNote.id,
-				createdAt: lastRecord_createdAt, // 기록할 내용이 만들어진 시간
-				updatedAt: options.updatedAt ?? new Date(), //대체된 시간
+				createdAt: lastRecord_createdAt, // 백업할 원래 노트가 만들어졌던 시간
+				updatedAt: options.updatedAt ?? new Date(), // 노트가 수정된 시간 (현재)
 				userId: originalNote.userId,
 				fileIds: originalNote.fileIds,
 				attachedFileTypes: originalNote.attachedFileTypes,
@@ -69,9 +70,18 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 				visibleUserIds: originalNote.visibleUserIds,
 			};
 
-			if (newData.text === originalNote.text && JSON.stringify(newData.fileIds) === JSON.stringify(originalNote.fileIds)) {
-				this.logger.info(`Skip Record History (The two notes are the same): ${originalNote.id}`);
-			} else if (lastRecord && lastRecord.text === newData.text && JSON.stringify(lastRecord.fileIds) === JSON.stringify(newData.fileIds)) {
+			const newFileIds = newData.fileIds;
+			const lastRecordFileIds = lastRecord?.fileIds;
+			const originalFileIds = originalNote.fileIds;
+			
+			if (newData.text === originalNote.text && 
+					newFileIds.length === originalFileIds.length && 
+					newFileIds.every((v) => originalFileIds.includes(v))) {
+				this.logger.info(`Skip Record History (There is no difference): ${originalNote.id}`);
+			} else if (lastRecord &&
+							  lastRecord.text === newData.text && 
+								newFileIds.length === lastRecordFileIds?.length && 
+								newFileIds.every((v) => originalFileIds.includes(v))) {
 				this.logger.info('Skip Record History (Already inserted)');
 			} else {
 				this.logger.info(`Record History for: ${originalNote.id}`);
@@ -91,7 +101,7 @@ export class NoteHistorySerivce implements OnApplicationShutdown {
 		sinceId?: NoteHistory['id'],
 		untilId?: NoteHistory['id'],
 	): Promise<NoteHistory[] | null> {
-		this.logger.info(`get history of note ${note_id}`);
+		this.logger.info(`Get history of note ${note_id}`);
 		try {
 			const history = await this.noteHistoryRepository.find({
 				where: {
