@@ -53,7 +53,9 @@ const props = defineProps<{
 const react = inject<((name: string) => void) | null>('react', null);
 
 const customEmojiName = computed(() => (props.name[0] === ':' ? props.name.substring(1, props.name.length - 1) : props.name).replace('@.', ''));
+const customEmojiNameWithoutHost = computed(() => customEmojiName.value.replace(/@[\w.]+/, ''));
 const isLocal = computed(() => !props.host && (customEmojiName.value.endsWith('@.') || !customEmojiName.value.includes('@')));
+const localEmoji = computed(() => customEmojisMap.get(customEmojiNameWithoutHost.value)); // 같은 이름을 가진 로컬 에모지
 
 const rawUrl = computed(() => {
 	if (props.url) {
@@ -86,17 +88,17 @@ const alt = computed(() => `:${customEmojiName.value}:`);
 const errored = ref(url.value == null);
 
 function onClick(ev: MouseEvent) {
-	if (props.menu) {
+	if (props.menu && localEmoji.value) {
 		const menuItems: MenuItem[] = [];
 
 		menuItems.push({
 			type: 'label',
-			text: `:${props.name}:`,
+			text: `:${customEmojiNameWithoutHost.value}:`,
 		}, {
 			text: i18n.ts.copy,
 			icon: 'ti ti-copy',
 			action: () => {
-				copyToClipboard(`:${props.name}:`);
+				copyToClipboard(`:${customEmojiNameWithoutHost.value}:`);
 				os.success();
 			},
 		});
@@ -106,7 +108,7 @@ function onClick(ev: MouseEvent) {
 				text: i18n.ts.doReaction,
 				icon: 'ti ti-plus',
 				action: () => {
-					react(`:${props.name}:`);
+					react(`:${customEmojiNameWithoutHost.value}:`);
 					sound.playMisskeySfx('reaction');
 				},
 			});
@@ -118,7 +120,7 @@ function onClick(ev: MouseEvent) {
 			action: async () => {
 				const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 					emoji: await misskeyApiGet('emoji', {
-						name: customEmojiName.value,
+						name: customEmojiNameWithoutHost.value,
 					}),
 				}, {
 					closed: () => dispose(),
