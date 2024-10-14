@@ -67,7 +67,9 @@ const props = defineProps<{
 const react = inject(DI.mfmEmojiReactCallback);
 
 const customEmojiName = computed(() => (props.name[0] === ':' ? props.name.substring(1, props.name.length - 1) : props.name).replace('@.', ''));
+const customEmojiNameWithoutHost = computed(() => customEmojiName.value.replace(/@[\w.]+/, ''));
 const isLocal = computed(() => !props.host && (customEmojiName.value.endsWith('@.') || !customEmojiName.value.includes('@')));
+const localEmoji = computed(() => customEmojisMap.get(customEmojiNameWithoutHost.value)); // 같은 이름을 가진 로컬 에모지
 const emojiCodeToMute = makeEmojiMuteKey(props);
 const isMuted = checkEmojiMuted(emojiCodeToMute);
 const shouldMute = computed(() => !props.ignoreMuted && isMuted.value);
@@ -103,7 +105,7 @@ const alt = computed(() => `:${customEmojiName.value}:`);
 const errored = ref(url.value == null);
 
 function onClick(ev: MouseEvent) {
-	if (props.menu) {
+	if (props.menu && localEmoji.value) {
 		const menuItems: MenuItem[] = [];
 
 		menuItems.push({
@@ -126,7 +128,7 @@ function onClick(ev: MouseEvent) {
 				text: i18n.ts.doReaction,
 				icon: 'ti ti-plus',
 				action: () => {
-					react(`:${props.name}:`);
+					react(`:${customEmojiNameWithoutHost.value}:`);
 				},
 			});
 		}
