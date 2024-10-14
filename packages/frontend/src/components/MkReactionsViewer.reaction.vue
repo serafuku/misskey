@@ -32,7 +32,6 @@ import { $i } from '@/i.js';
 import MkReactionEffect from '@/components/MkReactionEffect.vue';
 import { i18n } from '@/i18n.js';
 import * as sound from '@/utility/sound.js';
-import { checkReactionPermissions } from '@/utility/check-reaction-permissions.js';
 import { customEmojisMap } from '@/custom-emojis.js';
 import { prefer } from '@/preferences.js';
 import { DI } from '@/di.js';
@@ -57,20 +56,22 @@ const emit = defineEmits<{
 const buttonEl = useTemplateRef('buttonEl');
 
 const emojiName = computed(() => props.reaction.replace(/:/g, '').replace(/@\./, ''));
-const emoji = computed(() => customEmojisMap.get(emojiName.value) ?? getUnicodeEmoji(props.reaction));
+const emojiNameWithoutHost = computed(() => emojiName.value.replace(/@[\w.]+/, ''));
+const localEmoji = computed(() => customEmojisMap.get(emojiNameWithoutHost.value) ?? getUnicodeEmoji(props.reaction));
 
 const canToggle = computed(() => {
 	// TODO
 	//return !props.reaction.match(/@\w/) && $i && emoji.value && checkReactionPermissions($i, props.note, emoji.value);
-	return !props.reaction.match(/@\w/) && $i && emoji.value;
+	return $i && localEmoji.value;
 });
-const canGetInfo = computed(() => !props.reaction.match(/@\w/) && props.reaction.includes(':'));
+const canGetInfo = computed(() => props.reaction.includes(':') && localEmoji.value);
 const isLocalCustomEmoji = props.reaction[0] === ':' && props.reaction.includes('@.');
 
 async function toggleReaction() {
 	if (!canToggle.value) return;
 
 	const oldReaction = props.myReaction;
+	const selected = props.reaction.includes(':') ? `:${emojiNameWithoutHost.value}:` : props.reaction;
 	if (oldReaction) {
 		const confirm = await os.confirm({
 			type: 'warning',
@@ -90,6 +91,8 @@ async function toggleReaction() {
 		misskeyApi('notes/reactions/delete', {
 			noteId: props.noteId,
 		}).then(() => {
+			if (!localEmoji.value) return;
+
 			noteEvents.emit(`unreacted:${props.noteId}`, {
 				userId: $i!.id,
 				reaction: oldReaction,
@@ -97,12 +100,12 @@ async function toggleReaction() {
 			if (oldReaction !== props.reaction) {
 				misskeyApi('notes/reactions/create', {
 					noteId: props.noteId,
-					reaction: props.reaction,
+					reaction: selected,
 				}).then(() => {
 					noteEvents.emit(`reacted:${props.noteId}`, {
 						userId: $i!.id,
 						reaction: props.reaction,
-						emoji: emoji.value,
+						emoji: localEmoji.value,
 					});
 				});
 			}
@@ -126,12 +129,12 @@ async function toggleReaction() {
 
 		misskeyApi('notes/reactions/create', {
 			noteId: props.noteId,
-			reaction: props.reaction,
+			reaction: selected,
 		}).then(() => {
 			noteEvents.emit(`reacted:${props.noteId}`, {
 				userId: $i!.id,
 				reaction: props.reaction,
-				emoji: emoji.value,
+				emoji: localEmoji.value,
 			});
 		});
 		// TODO: 上位コンポーネントでやる
@@ -151,7 +154,7 @@ async function menu(ev) {
 			action: async () => {
 				const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 					emoji: await misskeyApiGet('emoji', {
-						name: props.reaction.replace(/:/g, '').replace(/@\./, ''),
+						name: emojiNameWithoutHost.value,
 					}),
 				}, {
 					closed: () => dispose(),

@@ -434,6 +434,8 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 							url: props.emojiUrls && props.emojiUrls[token.props.name],
 							normal: props.plain,
 							host: props.author.host,
+							menu: props.enableEmojiMenu,
+							menuReaction: props.enableEmojiMenuReaction,
 							useOriginalSize: scale >= 2.5,
 							menu: props.enableEmojiMenu,
 							menuReaction: false,
