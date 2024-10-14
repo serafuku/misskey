@@ -52,17 +52,19 @@ const emit = defineEmits<{
 const buttonEl = shallowRef<HTMLElement>();
 
 const emojiName = computed(() => props.reaction.replace(/:/g, '').replace(/@\./, ''));
-const emoji = computed(() => customEmojisMap.get(emojiName.value) ?? getUnicodeEmoji(props.reaction));
+const emojiNameWithoutHost = computed(() => emojiName.value.replace(/@[\w.]+/, ''));
+const localEmoji = computed(() => props.reaction.includes(':') ? customEmojisMap.get(emojiNameWithoutHost.value) : getUnicodeEmoji(props.reaction));
 
 const canToggle = computed(() => {
-	return !props.reaction.match(/@\w/) && $i && emoji.value && checkReactionPermissions($i, props.note, emoji.value);
+	return $i && localEmoji.value && checkReactionPermissions($i, props.note, localEmoji.value);
 });
-const canGetInfo = computed(() => !props.reaction.match(/@\w/) && props.reaction.includes(':'));
+const canGetInfo = computed(() => props.reaction.includes(':') && localEmoji.value);
 
 async function toggleReaction() {
 	if (!canToggle.value) return;
 
 	const oldReaction = props.note.myReaction;
+	const selected = props.reaction.includes(':') ? `:${emojiNameWithoutHost.value}:` : props.reaction;
 	if (oldReaction) {
 		const confirm = await os.confirm({
 			type: 'warning',
@@ -85,7 +87,7 @@ async function toggleReaction() {
 			if (oldReaction !== props.reaction) {
 				misskeyApi('notes/reactions/create', {
 					noteId: props.note.id,
-					reaction: props.reaction,
+					reaction: selected,
 				});
 			}
 		});
@@ -99,7 +101,7 @@ async function toggleReaction() {
 
 		misskeyApi('notes/reactions/create', {
 			noteId: props.note.id,
-			reaction: props.reaction,
+			reaction: selected,
 		});
 		if (props.note.text && props.note.text.length > 100 && (Date.now() - new Date(props.note.createdAt).getTime() < 1000 * 3)) {
 			claimAchievement('reactWithoutRead');
@@ -116,7 +118,7 @@ async function menu(ev) {
 		action: async () => {
 			const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 				emoji: await misskeyApiGet('emoji', {
-					name: props.reaction.replace(/:/g, '').replace(/@\./, ''),
+					name: emojiNameWithoutHost.value,
 				}),
 			}, {
 				closed: () => dispose(),
