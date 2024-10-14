@@ -38,6 +38,7 @@ import { prefer } from '@/preferences.js';
 import { DI } from '@/di.js';
 import { noteEvents } from '@/composables/use-note-capture.js';
 import { mute as muteEmoji, unmute as unmuteEmoji, checkMuted as isEmojiMuted } from '@/utility/emoji-mute.js';
+import { note } from '.storybook/fakes';
 import { haptic } from '@/utility/haptic.js';
 
 const props = defineProps<{
@@ -58,15 +59,17 @@ const emit = defineEmits<{
 const buttonEl = useTemplateRef('buttonEl');
 
 const emojiName = computed(() => props.reaction.replace(/:/g, '').replace(/@\./, ''));
+const emojiNameWithoutHost = computed(() => emojiName.value.replace(/@[\w.]+/, ''));
+const localEmoji = computed(() => props.reaction.includes(':') ? customEmojisMap.get(emojiNameWithoutHost.value) : getUnicodeEmoji(props.reaction));
 
 const canToggle = computed(() => {
 	const emoji = customEmojisMap.get(emojiName.value) ?? getUnicodeEmoji(props.reaction);
 
 	// TODO
-	//return !props.reaction.match(/@\w/) && $i && emoji && checkReactionPermissions($i, props.note, emoji);
-	return !props.reaction.match(/@\w/) && $i && emoji;
+	//return $i && localEmoji.value && checkReactionPermissions($i, props.note, localEmoji.value);
+	return !props.reaction.match(/@\w/) && $i && localEmoji.value;
 });
-const canGetInfo = computed(() => !props.reaction.match(/@\w/) && props.reaction.includes(':'));
+const canGetInfo = computed(() => props.reaction.includes(':') && localEmoji.value);
 const isLocalCustomEmoji = props.reaction[0] === ':' && props.reaction.includes('@.');
 
 async function toggleReaction() {
@@ -76,6 +79,7 @@ async function toggleReaction() {
 	const me = $i;
 
 	const oldReaction = props.myReaction;
+	const selected = props.reaction.includes(':') ? `:${emojiNameWithoutHost.value}:` : props.reaction;
 	if (oldReaction) {
 		const confirm = await os.confirm({
 			type: 'warning',
@@ -103,14 +107,14 @@ async function toggleReaction() {
 			if (oldReaction !== props.reaction) {
 				misskeyApi('notes/reactions/create', {
 					noteId: props.noteId,
-					reaction: props.reaction,
+					reaction: selected,
 				}).then(() => {
 					const emoji = customEmojisMap.get(emojiName.value);
 					if (emoji == null) return;
 					noteEvents.emit(`reacted:${props.noteId}`, {
 						userId: me.id,
 						reaction: props.reaction,
-						emoji: emoji,
+						emoji: localEmoji.value,
 					});
 				});
 			}
@@ -135,7 +139,7 @@ async function toggleReaction() {
 
 		misskeyApi('notes/reactions/create', {
 			noteId: props.noteId,
-			reaction: props.reaction,
+			reaction: selected,
 		}).then(() => {
 			const emoji = customEmojisMap.get(emojiName.value);
 			if (emoji == null) return;
@@ -143,7 +147,7 @@ async function toggleReaction() {
 			noteEvents.emit(`reacted:${props.noteId}`, {
 				userId: me.id,
 				reaction: props.reaction,
-				emoji: emoji,
+				emoji: localEmoji.value,
 			});
 		});
 		// TODO: 上位コンポーネントでやる
