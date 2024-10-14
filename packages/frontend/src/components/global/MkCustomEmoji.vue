@@ -69,6 +69,8 @@ const props = defineProps<{
 const react = inject(DI.mfmEmojiReactCallback);
 
 const customEmojiName = computed(() => normalizeCustomEmojiName(props.name));
+const customEmojiNameWithoutHost = computed(() => customEmojiName.value.split('@')[0]);
+const localEmoji = computed(() => customEmojisMap.get(customEmojiNameWithoutHost.value));
 const isLocal = computed(() => isLocalCustomEmojiName(customEmojiName.value, props.host));
 const emojiCodeToMute = makeEmojiMuteKey(props);
 const isMuted = checkEmojiMuted(emojiCodeToMute);
@@ -113,27 +115,27 @@ function onClick(ev: PointerEvent) {
 			text: `:${props.name}:`,
 		});
 
-		if (isLocal.value) {
+		if (localEmoji.value) {
 			menuItems.push({
 				text: i18n.ts.copy,
 				icon: 'ti ti-copy',
 				action: () => {
-					copyToClipboard(`:${props.name}:`);
+					copyToClipboard(`:${customEmojiNameWithoutHost.value}:`);
 				},
 			});
 		}
 
-		if (props.menuReaction && react) {
+		if (props.menuReaction && react && localEmoji.value) {
 			menuItems.push({
 				text: i18n.ts.doReaction,
 				icon: 'ti ti-plus',
 				action: () => {
-					react(`:${props.name}:`);
+					react(`:${customEmojiNameWithoutHost.value}:`);
 				},
 			});
 		}
 
-		if (isLocal.value) {
+		if (localEmoji.value) {
 			menuItems.push({
 				type: 'divider',
 			}, {
@@ -142,7 +144,7 @@ function onClick(ev: PointerEvent) {
 				action: async () => {
 					const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 						emoji: await misskeyApiGet('emoji', {
-							name: customEmojiName.value,
+							name: customEmojiNameWithoutHost.value,
 						}),
 					}, {
 						closed: () => dispose(),
@@ -169,24 +171,24 @@ function onClick(ev: PointerEvent) {
 			});
 		}
 
-		if (isLocal.value) {
+		if (localEmoji.value) {
 			menuItems.push({
 				text: i18n.ts.addToEmojiPalette,
 				icon: 'ti ti-palette',
 				action: () => {
-					addToEmojiPalette(`:${props.name}:`);
+					addToEmojiPalette(`:${customEmojiNameWithoutHost.value}:`);
 				},
 			});
 		}
 
-		if (($i?.isModerator ?? $i?.isAdmin) && isLocal.value) {
+		if (($i?.isModerator ?? $i?.isAdmin) && localEmoji.value) {
 			menuItems.push({
 				type: 'divider',
 			}, {
 				text: i18n.ts.edit,
 				icon: 'ti ti-pencil',
 				action: async () => {
-					await edit(props.name);
+					await edit(customEmojiNameWithoutHost.value);
 				},
 			});
 		}

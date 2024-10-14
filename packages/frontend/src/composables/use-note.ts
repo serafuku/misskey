@@ -305,15 +305,22 @@ export function useNote(
 		const isLoggedIn = await pleaseLogin({ openOnRemote: pleaseLoginContext });
 		if (!isLoggedIn) return;
 		showMovedDialog();
+		const oldReaction = $appearNote.myReaction;
+		if (oldReaction) {
+			await misskeyApi('notes/reactions/delete', { noteId: appearNote.id });
+			noteEvents.emit(`unreacted:${appearNote.id}`, {
+				userId: $i!.id,
+				reaction: oldReaction,
+			});
+		}
 		sound.playMisskeySfx('reaction');
-		misskeyApi('notes/reactions/create', {
+		await misskeyApi('notes/reactions/create', {
 			noteId: appearNote.id,
 			reaction: reaction,
-		}).then(() => {
-			noteEvents.emit(`reacted:${appearNote.id}`, {
-				userId: $i!.id,
-				reaction: reaction,
-			});
+		});
+		noteEvents.emit(`reacted:${appearNote.id}`, {
+			userId: $i!.id,
+			reaction: reaction,
 		});
 	}
 

@@ -443,7 +443,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 							host: props.author.host,
 							useOriginalSize: scale >= 2.5,
 							menu: props.enableEmojiMenu,
-							menuReaction: false,
+							menuReaction: props.enableEmojiMenuReaction,
 						})];
 					}
 				}
