@@ -490,8 +490,8 @@ export function createMfmRenderer<P extends MfmBaseProps = MfmBaseProps>(config:
 								normal: props.plain,
 								host: props.author.host,
 								useOriginalSize: scale >= 2.5,
-								// リモートの絵文字はリアクションできないので menuReaction は常に false
-								...(supportsEmojiMenu ? { menu: props.enableEmojiMenu, menuReaction: false } : {}),
+								// リモートの絵文字でもローカルに同名のものがあればリアクションできる（MkCustomEmoji 側で解決される）
+								...(supportsEmojiMenu ? { menu: props.enableEmojiMenu, menuReaction: props.enableEmojiMenuReaction } : {}),
 							})];
 						}
 					}
