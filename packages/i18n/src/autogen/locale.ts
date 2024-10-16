@@ -2285,6 +2285,14 @@ export interface Locale extends ILocale {
      */
     "objectStoragePrefixDesc": string;
     /**
+     * Prefix For Remote
+     */
+    "objectStoragePrefixForRemote": string;
+    /**
+     * 設定すると、このprefixのディレクトリ下にRemoteファイルが保存されます。
+     */
+    "objectStoragePrefixForRemoteDesc": string;
+    /**
      * Endpoint
      */
     "objectStorageEndpoint": string;
@@ -2324,6 +2332,14 @@ export interface Locale extends ILocale {
      * s3ForcePathStyleを有効にすると、バケット名をURLのホスト名ではなくパスの一部として指定することを強制します。セルフホストされたMinioなどの使用時に有効にする必要がある場合があります。
      */
     "s3ForcePathStyleDesc": string;
+    /**
+     * Cache Days
+     */
+    "objectStorageCacheDays": string;
+    /**
+     * リモートファイルをキャッシュする期間（日）
+     */
+    "objectStorageCacheDaysDesc": string;
     /**
      * サーバーログ
      */

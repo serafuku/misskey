@@ -11,6 +11,7 @@ import type { Sharp } from 'sharp';
 import { sharpBmp } from '@misskey-dev/sharp-read-bmp';
 import { In, IsNull } from 'typeorm';
 import { DeleteObjectCommandInput, PutObjectCommandInput, NoSuchKey } from '@aws-sdk/client-s3';
+import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { DriveFilesRepository, UsersRepository, DriveFoldersRepository, UserProfilesRepository, MiMeta } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -22,7 +23,7 @@ import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js
 import { FILE_TYPE_BROWSERSAFE } from '@/const.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { contentDisposition } from '@/misc/content-disposition.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { GlobalEvents, GlobalEventService } from '@/core/GlobalEventService.js';
 import { VideoProcessingService } from '@/core/VideoProcessingService.js';
 import { ImageProcessingService } from '@/core/ImageProcessingService.js';
 import type { IImage } from '@/core/ImageProcessingService.js';
@@ -44,6 +45,7 @@ import { correctFilename } from '@/misc/correct-filename.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { acquireApObjectLock } from '@/misc/distributed-lock.js';
 
 type AddFileArgs = {
 	/** User who wish to add file */
@@ -114,6 +116,12 @@ export class DriveService {
 		@Inject(DI.driveFoldersRepository)
 		private driveFoldersRepository: DriveFoldersRepository,
 
+		@Inject(DI.redisForSub)
+		private redisForSub: Redis.Redis,
+
+		@Inject(DI.redis)
+		private redisClient: Redis.Redis,
+
 		private fileInfoService: FileInfoService,
 		private userEntityService: UserEntityService,
 		private driveFileEntityService: DriveFileEntityService,
@@ -136,6 +144,7 @@ export class DriveService {
 		this.registerLogger = logger.createSubLogger('register', 'yellow');
 		this.downloaderLogger = logger.createSubLogger('downloader');
 		this.deleteLogger = logger.createSubLogger('delete');
+		this.redisForSub.on('message', this.onMessage);
 	}
 
 	/***
@@ -145,9 +154,10 @@ export class DriveService {
 	 * @param type Content-Type for original
 	 * @param hash Hash for original
 	 * @param size Size for original
+	 * @param isRemoteFile is Remote file or Local File (Serafuku Custom)
 	 */
 	@bindThis
-	private async save(file: MiDriveFile, path: string, name: string, type: string, hash: string, size: number): Promise<MiDriveFile> {
+	private async save(file: MiDriveFile, path: string, name: string, type: string, hash: string, size: number, isRemoteFile = false): Promise<MiDriveFile> {
 	// thunbnail, webpublic を必要なら生成
 		const alts = await this.generateAlts(path, type, !file.uri);
 
@@ -174,8 +184,8 @@ export class DriveService {
 				?? `${ this.meta.objectStorageUseSSL ? 'https' : 'http' }://${ this.meta.objectStorageEndpoint }${ this.meta.objectStoragePort ? `:${this.meta.objectStoragePort}` : '' }/${ this.meta.objectStorageBucket }`;
 
 			// for original
-			const prefix = this.meta.objectStoragePrefix ? `${this.meta.objectStoragePrefix}/` : '';
-			const key = `${prefix}${randomUUID()}${ext}`;
+			const prefix = (isRemoteFile && this.meta.objectStoragePrefixForRemote) ? `${this.meta.objectStoragePrefixForRemote}/` : (this.meta.objectStoragePrefix ? `${this.meta.objectStoragePrefix}/` : '');
+			const key = `${prefix}original/${randomUUID()}${ext}`;
 			const url = `${ baseUrl }/${ key }`;
 
 			// for alts
@@ -192,7 +202,7 @@ export class DriveService {
 			];
 
 			if (alts.webpublic) {
-				webpublicKey = `${prefix}webpublic-${randomUUID()}.${alts.webpublic.ext}`;
+				webpublicKey = `${prefix}webpublic/webpublic-${randomUUID()}.${alts.webpublic.ext}`;
 				webpublicUrl = `${ baseUrl }/${ webpublicKey }`;
 
 				this.registerLogger.info(`uploading webpublic: ${webpublicKey}`);
@@ -200,7 +210,7 @@ export class DriveService {
 			}
 
 			if (alts.thumbnail) {
-				thumbnailKey = `${prefix}thumbnail-${randomUUID()}.${alts.thumbnail.ext}`;
+				thumbnailKey = `${prefix}thumbnail/thumbnail-${randomUUID()}.${alts.thumbnail.ext}`;
 				thumbnailUrl = `${ baseUrl }/${ thumbnailKey }`;
 
 				this.registerLogger.info(`uploading thumbnail: ${thumbnailKey}`);
@@ -223,7 +233,18 @@ export class DriveService {
 			file.size = size;
 			file.storedInternal = false;
 
-			return await this.driveFilesRepository.insertOne(file);
+			// Re-Cache or create
+			if (await this.driveFilesRepository.exists({ where: { id: file.id } })) {
+				file.isLink = false;
+				file.cachedAt = new Date();
+				await this.driveFilesRepository.update({ id: file.id }, file);
+				return await this.driveFilesRepository.findOneOrFail({ where: { id: file.id } });
+			} else {
+				if (file.userHost) {
+					file.cachedAt = new Date();
+				}
+				return await this.driveFilesRepository.insertOne(file);
+			}
 		} else { // use internal storage
 			const accessKey = randomUUID();
 			const thumbnailAccessKey = 'thumbnail-' + randomUUID();
@@ -257,7 +278,18 @@ export class DriveService {
 			file.md5 = hash;
 			file.size = size;
 
-			return await this.driveFilesRepository.insertOne(file);
+			// Re-Cache or create
+			if (await this.driveFilesRepository.exists({ where: { id: file.id } })) {
+				file.isLink = false;
+				file.cachedAt = new Date();
+				await this.driveFilesRepository.update({ id: file.id }, file);
+				return await this.driveFilesRepository.findOneOrFail({ where: { id: file.id } });
+			} else {
+				if (file.userHost) {
+					file.cachedAt = new Date();
+				}
+				return await this.driveFilesRepository.insertOne(file);
+			}
 		}
 	}
 
@@ -655,7 +687,8 @@ export class DriveService {
 				}
 			}
 		} else {
-			file = await (this.save(file, path, detectedName, info.type.mime, info.md5, info.size));
+			const isRemoteFile = (user && this.userEntityService.isRemoteUser(user)) ?? false;
+			file = await (this.save(file, path, detectedName, info.type.mime, info.md5, info.size, isRemoteFile));
 		}
 
 		this.registerLogger.succ(`drive file has been created ${file.id}`);
@@ -679,6 +712,57 @@ export class DriveService {
 		}
 
 		return file;
+	}
+
+	@bindThis
+	private async onMessage(_: string, data: string) {
+		const obj = JSON.parse(data);
+
+		if (obj.channel === 'internal') {
+			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
+			switch (type) {
+				case 'remoteFileCacheMiss': {
+					if (!this.meta.cacheRemoteFiles) return;
+					const fileId = body.fileId;
+					this.queueService.createReDownloadRemoteFileJob(fileId);
+					break;
+				}
+				default:
+					break;
+			}
+		}
+	}
+
+	@bindThis
+	public async reCacheFile(fileId: MiDriveFile['id']) {
+		if (!this.meta.cacheRemoteFiles) return;
+		const unlock = await acquireApObjectLock(this.redisClient, `DriveFile://${fileId}`);
+
+		const file = await this.driveFilesRepository.findOne({ where: { id: fileId } });
+		if (!file || !file.uri || !file.isLink || (file.isSensitive && !this.meta.cacheRemoteSensitiveFiles)) {
+			const reason = (!file || !file.uri || !file.isLink) ? `File URI: ${file?.uri} File isLink: ${file?.isLink}` : `Sensitive: ${file.isSensitive} and Remote Sensitive media Caching is Disabled`;
+			this.registerLogger.debug(`Skip Re-Cache (Reson): ${reason}`);
+			unlock();
+			return;
+		}
+
+		const uri = file.uri;
+		const [path, cleanup] = await createTemp();
+
+		try {
+			const { filename: name } = await this.downloadService.downloadUrl(uri, path);
+			const info = await this.fileInfoService.getFileInfo(path, {
+				skipSensitiveDetection: true,
+			});
+
+			const newFile = await this.save(file, path, name, info.type.mime, info.md5, info.size, true);
+			this.registerLogger.succ(`drive file has been Re-Cached ${file.src} -> ${newFile.url}`);
+		} catch (err) {
+			this.registerLogger.warn(`Fail to Re-Cache Remote file: ${err}`);
+		} finally {
+			unlock();
+			cleanup();
+		}
 	}
 
 	@bindThis

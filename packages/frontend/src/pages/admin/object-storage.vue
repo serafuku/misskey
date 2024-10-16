@@ -33,6 +33,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #caption><SearchText>{{ i18n.ts.objectStoragePrefixDesc }}</SearchText></template>
 						</MkInput>
 					</SearchMarker>
+					<SearchMarker>
+						<MkInput v-model="objectStoragePrefixForRemote">
+							<template #label><SearchLabel>{{ i18n.ts.objectStoragePrefixForRemote }}</SearchLabel></template>
+							<template #caption><SearchText>{{ i18n.ts.objectStoragePrefixForRemoteDesc }}</SearchText></template>
+						</MkInput>
+					</SearchMarker>
 
 					<SearchMarker>
 						<MkInput v-model="objectStorageEndpoint" :placeholder="'example.com'">
@@ -91,6 +97,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #caption><SearchText>{{ i18n.ts.s3ForcePathStyleDesc }}</SearchText></template>
 						</MkSwitch>
 					</SearchMarker>
+					<SearchMarker>
+						<MkInput v-model="objectStorageCacheDays" type="number" :min="0">
+							<template #label><SearchLabel>{{ i18n.ts.objectStorageCacheDays }}</SearchLabel></template>
+							<template #caption><SearchText>{{ i18n.ts.objectStorageCacheDaysDesc }}</SearchText></template>
+						</MkInput>
+					</SearchMarker>
 				</template>
 			</div>
 		</SearchMarker>
@@ -123,6 +135,8 @@ const useObjectStorage = ref(meta.useObjectStorage);
 const objectStorageBaseUrl = ref(meta.objectStorageBaseUrl);
 const objectStorageBucket = ref(meta.objectStorageBucket);
 const objectStoragePrefix = ref(meta.objectStoragePrefix);
+const objectStoragePrefixForRemote = ref(meta.objectStoragePrefixForRemote);
+const objectStorageCacheDays = ref(meta.objectStorageCacheDays);
 const objectStorageEndpoint = ref(meta.objectStorageEndpoint);
 const objectStorageRegion = ref(meta.objectStorageRegion);
 const objectStoragePort = ref(meta.objectStoragePort);
@@ -139,6 +153,7 @@ function save() {
 		objectStorageBaseUrl: objectStorageBaseUrl.value,
 		objectStorageBucket: objectStorageBucket.value,
 		objectStoragePrefix: objectStoragePrefix.value,
+		objectStoragePrefixForRemote: objectStoragePrefixForRemote.value,
 		objectStorageEndpoint: objectStorageEndpoint.value,
 		objectStorageRegion: objectStorageRegion.value,
 		objectStoragePort: objectStoragePort.value,
@@ -148,6 +163,7 @@ function save() {
 		objectStorageUseProxy: objectStorageUseProxy.value,
 		objectStorageSetPublicRead: objectStorageSetPublicRead.value,
 		objectStorageS3ForcePathStyle: objectStorageS3ForcePathStyle.value,
+		objectStorageCacheDays: Number(objectStorageCacheDays.value),
 	}).then(() => {
 		fetchInstance(true);
 	});

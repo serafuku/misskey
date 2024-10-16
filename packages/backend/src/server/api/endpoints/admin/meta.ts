@@ -303,6 +303,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			objectStoragePrefixForRemote: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			objectStorageEndpoint: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -334,6 +338,10 @@ export const meta = {
 			objectStorageSetPublicRead: {
 				type: 'boolean',
 				optional: false, nullable: false,
+			},
+			objectStorageCacheDays: {
+				type: 'number', 
+				optional: false, nullable: true,
 			},
 			enableIpLogging: {
 				type: 'boolean',
@@ -726,6 +734,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				objectStorageBaseUrl: instance.objectStorageBaseUrl,
 				objectStorageBucket: instance.objectStorageBucket,
 				objectStoragePrefix: instance.objectStoragePrefix,
+				objectStoragePrefixForRemote: instance.objectStoragePrefixForRemote,
 				objectStorageEndpoint: instance.objectStorageEndpoint,
 				objectStorageRegion: instance.objectStorageRegion,
 				objectStoragePort: instance.objectStoragePort,
@@ -735,6 +744,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				objectStorageUseProxy: instance.objectStorageUseProxy,
 				objectStorageSetPublicRead: instance.objectStorageSetPublicRead,
 				objectStorageS3ForcePathStyle: instance.objectStorageS3ForcePathStyle,
+				objectStorageCacheDays: instance.objectStorageCacheDays,
 				deeplAuthKey: instance.deeplAuthKey,
 				deeplIsPro: instance.deeplIsPro,
 				enableIpLogging: instance.enableIpLogging,

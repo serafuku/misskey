@@ -450,6 +450,12 @@ export class MiMeta {
 		length: 1024,
 		nullable: true,
 	})
+	public objectStoragePrefixForRemote: string | null;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
 	public objectStorageBaseUrl: string | null;
 
 	@Column('varchar', {
@@ -500,6 +506,11 @@ export class MiMeta {
 		default: true,
 	})
 	public objectStorageS3ForcePathStyle: boolean;
+
+	@Column('integer', {
+		nullable: true,
+	})
+	public objectStorageCacheDays: number | null;
 
 	@Column('boolean', {
 		default: false,
