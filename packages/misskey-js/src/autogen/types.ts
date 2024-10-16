@@ -9424,6 +9424,7 @@ export interface operations {
                         objectStorageBaseUrl: string | null;
                         objectStorageBucket: string | null;
                         objectStoragePrefix: string | null;
+                        objectStoragePrefixForRemote: string | null;
                         objectStorageEndpoint: string | null;
                         objectStorageRegion: string | null;
                         objectStoragePort: number | null;
@@ -12764,6 +12765,7 @@ export interface operations {
                     objectStorageBaseUrl?: string | null;
                     objectStorageBucket?: string | null;
                     objectStoragePrefix?: string | null;
+                    objectStoragePrefixForRemote?: string | null;
                     objectStorageEndpoint?: string | null;
                     objectStorageRegion?: string | null;
                     objectStoragePort?: number | null;
