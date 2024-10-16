@@ -2255,6 +2255,14 @@ export interface Locale extends ILocale {
      */
     "objectStoragePrefixDesc": string;
     /**
+     * Prefix For Remote
+     */
+    "objectStoragePrefixForRemote": string;
+    /**
+     * 設定すると、このprefixのディレクトリ下にRemoteファイルが保存されます。
+     */
+    "objectStoragePrefixForRemoteDesc": string;
+    /**
      * Endpoint
      */
     "objectStorageEndpoint": string;
