@@ -6,10 +6,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { IsNull, MoreThan, Not } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { MiDriveFile, DriveFilesRepository } from '@/models/_.js';
+import type { MiDriveFile, DriveFilesRepository, UsersRepository } from '@/models/_.js';
 import type Logger from '@/logger.js';
 import { DriveService } from '@/core/DriveService.js';
+import { MetaService } from '@/core/MetaService.js';
+import { S3Service } from '@/core/S3Service.js';
 import { bindThis } from '@/decorators.js';
+import type { MiRemoteUser, MiUser } from '@/models/User.js';
+import { appendQuery, query } from '@/misc/prelude/url.js';
+import type { Config } from '@/config.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 
@@ -21,8 +26,16 @@ export class CleanRemoteFilesProcessorService {
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
+		@Inject(DI.usersRepository)
+		private usersRepository: UsersRepository,
+
+		@Inject(DI.config)
+		private config: Config,
+
 		private driveService: DriveService,
 		private queueLoggerService: QueueLoggerService,
+		private metaService: MetaService,
+		private s3Service: S3Service,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-remote-files');
 	}
@@ -67,5 +80,134 @@ export class CleanRemoteFilesProcessorService {
 		}
 
 		this.logger.succ('All cached remote files has been deleted.');
+		await this.cleanOrphanedFiles();
+		await this.fixAvatars();
+	}
+
+	@bindThis
+	private async cleanOrphanedFiles(): Promise<void> {
+		const meta = await this.metaService.fetch();
+		if (!meta.useObjectStorage || !meta.objectStorageBucket) return;
+
+		// This instance owns the entire bucket, including files under old prefixes.
+		// Uploads finish before their DB records are saved. Leave recent objects alone.
+		const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+		let marker: string | undefined;
+		let deletedCount = 0;
+		this.logger.info('Cleaning orphaned files in the object storage bucket...');
+
+		while (true) {
+			const objects = await this.s3Service.list(meta, {
+				Bucket: meta.objectStorageBucket,
+				...(marker ? { Marker: marker } : {}),
+			});
+
+			for (const object of objects.Contents ?? []) {
+				const key = object.Key;
+				if (!key || !(object.LastModified && object.LastModified.getTime() < cutoff)) continue;
+
+				const isReferenced = await this.driveFilesRepository.exists({
+					where: [
+						{ accessKey: key },
+						{ thumbnailAccessKey: key },
+						{ webpublicAccessKey: key },
+					],
+				});
+				if (isReferenced) continue;
+
+				await this.s3Service.delete(meta, { Bucket: meta.objectStorageBucket, Key: key });
+				deletedCount++;
+			}
+
+			if (!objects.IsTruncated) break;
+			const nextMarker = objects.NextMarker ?? objects.Contents?.at(-1)?.Key;
+			if (!nextMarker || nextMarker === marker) {
+				throw new Error('Object storage listing did not provide a continuation marker');
+			}
+			marker = nextMarker;
+		}
+
+		this.logger.succ(`${deletedCount} orphaned files deleted.`);
+	}
+
+	@bindThis
+	private async fixAvatars(): Promise<void> {
+		this.logger.info('Start Update remote users avatar URLs...');
+
+		let cursor: MiRemoteUser['id'] | null = null;
+		let count = 0;
+		while (true) {
+			const users = await this.usersRepository.find({
+				where: [{
+					host: Not(IsNull()),
+					avatarId: Not(IsNull()),
+					...(cursor ? { id: MoreThan(cursor) } : {} ),
+				}, {
+					host: Not(IsNull()),
+					bannerId: Not(IsNull()),
+					...(cursor ? { id: MoreThan(cursor) } : {} ),
+				}],
+				take: 8,
+				order: {
+					id: 1,
+				},
+			});
+
+			if (users.length === 0) {
+				break;
+			}
+			cursor = users.at(-1)?.id ?? null;
+			const results = await Promise.all(users.map(user => this.fixAvatar(user)));
+			count += results.filter(res => res).length;
+		}
+
+		this.logger.succ(`Updated ${count} User's avatar/banner URL`);
+	}
+
+	/** return true when updated */
+	@bindThis
+	private async fixAvatar(user: MiUser | null): Promise<boolean> {
+		const update: Partial<MiUser> = {};
+		if (!user) return false;
+		if (user.avatarId) {
+			const avatarFile = await this.driveFilesRepository.findOneBy({ id: user.avatarId });
+			if (avatarFile?.isLink && avatarFile.uri) {
+				const avatarUrl = this.getProxiedUrl(avatarFile.uri, 'avatar');
+				if (avatarUrl !== user.avatarUrl) {
+					update.avatarUrl = avatarUrl;
+				}
+			}
+		}
+		if (user.bannerId) {
+			const bannerFile = await this.driveFilesRepository.findOneBy({ id: user.bannerId });
+			if (bannerFile?.isLink && bannerFile.uri) {
+				const bannerUrl = this.getProxiedUrl(bannerFile.uri);
+				if (bannerUrl !== user.bannerUrl) {
+					update.bannerUrl = bannerUrl;
+				}
+			}
+		}
+		if (!update.avatarUrl && !update.bannerUrl) return false;
+
+		// Update User Avatar / Banner URL
+		try {
+			this.logger.debug(`Update user to ${JSON.stringify(update)}`);
+			await this.usersRepository.update({ id: user.id }, update);
+			return true;
+		} catch (err) {
+			this.logger.warn(JSON.stringify(err));
+			return false;
+		}
+	}
+
+	@bindThis
+	private getProxiedUrl(url: string, mode?: 'static' | 'avatar'): string {
+		return appendQuery(
+			`${this.config.mediaProxy}/${mode ?? 'image'}.webp`,
+			query({
+				url,
+				...(mode ? { [mode]: '1' } : {}),
+			}),
+		);
 	}
 }
