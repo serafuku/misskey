@@ -134,12 +134,13 @@ function onPasskeyDone(credential: AuthenticationPublicKeyCredential): void {
 		misskeyApi('signin-with-passkey', {
 			credential: credential.toJSON(),
 			context: passkeyContext.value,
-		}).then((res) => {
+		}).then(async (res) => {
 			if (res.signinResponse == null) {
 				onSigninApiError();
 				return;
 			}
 			emit('login', res.signinResponse);
+			await onLoginSucceeded(res.signinResponse);
 		}).catch(onSigninApiError);
 	} else if (userInfo.value != null) {
 		tryLogin({
