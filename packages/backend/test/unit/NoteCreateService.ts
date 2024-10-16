@@ -102,6 +102,7 @@ describe('NoteCreateService', () => {
 			isLink: false,
 			requestHeaders: null,
 			requestIp: null,
+			cachedAt: null,
 		};
 
 		test('note without renote should not be Renote', () => {
