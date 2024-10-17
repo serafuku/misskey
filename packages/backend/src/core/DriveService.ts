@@ -716,7 +716,7 @@ export class DriveService {
 			});
 
 			const newFile = await this.save(file, path, name, info.type.mime, info.md5, info.size, true);
-			this.registerLogger.succ(`drive file has been Re-Cached ${file.url} -> ${newFile.url}`);
+			this.registerLogger.succ(`drive file has been Re-Cached ${file.src} -> ${newFile.url}`);
 		} catch (err) {
 			this.registerLogger.warn(`Fail to Re-Cache Remote file: ${err}`);
 		} finally {
