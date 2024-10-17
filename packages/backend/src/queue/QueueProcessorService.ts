@@ -46,6 +46,8 @@ import { AggregateRetentionProcessorService } from './processors/AggregateRetent
 import { CleanRemoteNotesProcessorService } from './processors/CleanRemoteNotesProcessorService.js';
 import { QueueLoggerService } from './QueueLoggerService.js';
 import { QUEUE, baseWorkerOptions } from './const.js';
+import { CleanExpiredRemoteFilesProcessorService } from './processors/CleanExpiredRemoteFilesProcessorService.js';
+import { ReDownloadRemoteFileProcessorService } from './processors/ReDownloadRemoteFileProcessorService.js';
 
 // ref. https://github.com/misskey-dev/misskey/pull/7635#issue-971097019
 function httpRelatedBackoff(attemptsMade: number) {
@@ -126,6 +128,8 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private bakeBufferedReactionsProcessorService: BakeBufferedReactionsProcessorService,
 		private checkModeratorsActivityProcessorService: CheckModeratorsActivityProcessorService,
 		private cleanProcessorService: CleanProcessorService,
+		private cleanExpiredRemoteFilesProcessorService: CleanExpiredRemoteFilesProcessorService,
+		private reDownloadRemoteFileProcessorService: ReDownloadRemoteFileProcessorService,
 		private cleanRemoteNotesProcessorService: CleanRemoteNotesProcessorService,
 	) {
 		this.logger = this.queueLoggerService.logger;
@@ -480,6 +484,8 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				switch (job.name) {
 					case 'deleteFile': return this.deleteFileProcessorService.process(job);
 					case 'cleanRemoteFiles': return this.cleanRemoteFilesProcessorService.process(job);
+					case 'CleanExpiredRemoteFiles': return this.cleanExpiredRemoteFilesProcessorService.process();
+					case 'ReDownloadRemoteFile': return this.reDownloadRemoteFileProcessorService.process(job);
 					default: throw new Error(`unrecognized job type ${job.name} for objectStorage`);
 				}
 			};
