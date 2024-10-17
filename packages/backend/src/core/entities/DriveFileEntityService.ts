@@ -125,9 +125,8 @@ export class DriveFileEntityService {
 			const key = file.webpublicAccessKey;
 
 			if (key && !key.match('/')) {	// 古いものはここにオブジェクトストレージキーが入ってるので除外
-				const url = `${this.config.url}/files/${key}`;
 				if (mode === 'avatar') return this.getProxiedUrl(file.uri, 'avatar');
-				return url;
+				else return this.getProxiedUrl(file.uri);
 			}
 		}
 
