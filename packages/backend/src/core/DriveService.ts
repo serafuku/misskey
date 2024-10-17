@@ -699,10 +699,11 @@ export class DriveService {
 
 	@bindThis
 	public async reCacheFile(fileId: MiDriveFile['id']) {
+		if (!this.meta.cacheRemoteFiles) return;
 		const unlock = await this.appLockService.getApLock(`DriveFile://${fileId}`, 30000);
 
 		const file = await this.driveFilesRepository.findOne({ where: { id: fileId } });
-		if (!file || !file.uri || !file.isLink || !this.meta.cacheRemoteFiles) return;
+		if (!file || !file.uri || !file.isLink) return;
 
 		const uri = file.uri;
 		const [path, cleanup] = await createTemp();
