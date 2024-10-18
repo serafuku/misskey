@@ -2329,6 +2329,14 @@ export interface Locale extends ILocale {
      */
     "s3ForcePathStyleDesc": string;
     /**
+     * Cache Days
+     */
+    "objectStorageCacheDays": string;
+    /**
+     * リモートファイルをキャッシュする期間（日）
+     */
+    "objectStorageCacheDaysDesc": string;
+    /**
      * サーバーログ
      */
     "serverLogs": string;
