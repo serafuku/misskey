@@ -235,9 +235,13 @@ export class DriveService {
 			// Re-Cache or create
 			if (await this.driveFilesRepository.exists({ where: { id: file.id } })) {
 				file.isLink = false;
+				file.cachedAt = new Date();
 				await this.driveFilesRepository.update({ id: file.id }, file);
 				return await this.driveFilesRepository.findOneOrFail({ where: { id: file.id } });
 			} else {
+				if (file.userHost) {
+					file.cachedAt = new Date();
+				}
 				return await this.driveFilesRepository.insertOne(file);
 			}
 		} else { // use internal storage
@@ -276,9 +280,13 @@ export class DriveService {
 			// Re-Cache or create
 			if (await this.driveFilesRepository.exists({ where: { id: file.id } })) {
 				file.isLink = false;
+				file.cachedAt = new Date();
 				await this.driveFilesRepository.update({ id: file.id }, file);
 				return await this.driveFilesRepository.findOneOrFail({ where: { id: file.id } });
 			} else {
+				if (file.userHost) {
+					file.cachedAt = new Date();
+				}
 				return await this.driveFilesRepository.insertOne(file);
 			}
 		}

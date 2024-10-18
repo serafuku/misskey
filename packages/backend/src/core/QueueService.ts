@@ -141,6 +141,17 @@ export class QueueService {
 				}
 			}
 		});
+
+		this.objectStorageQueue.add('CleanExpiredRemoteFiles', {
+		}, {
+			repeat: { pattern: '0 * * * *' },
+			removeOnComplete: {
+				age: 3600 * 24 * 7, // keep up to 7 days
+			},
+			removeOnFail: {
+				age: 3600 * 24 * 7, // keep up to 7 days
+			},
+		});
 	}
 
 	@bindThis
