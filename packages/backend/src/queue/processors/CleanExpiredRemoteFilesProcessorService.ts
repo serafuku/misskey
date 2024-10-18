@@ -24,33 +24,13 @@ export class CleanExpiredRemoteFilesProcessorService {
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		@Inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
-
 		private driveService: DriveService,
 		private queueLoggerService: QueueLoggerService,
 		private metaService: MetaService,
-		private apPersonService: ApPersonService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('clean-expired-remote-files');
 	}
 
-	@bindThis
-	private async updateUsers(userIds: Set<string | null>): Promise<void> {
-		return new Promise((resolve, reject) => {
-			userIds.forEach(async (userId) => {
-				this.logger.debug(`update uid ${userId}`);
-				try {
-					if (!userId) return;
-					const user = await this.usersRepository.findOneByOrFail({ id: userId }) as MiRemoteUser;
-					await this.apPersonService.updatePerson(user.uri);
-				} catch (err) {
-					this.logger.debug(`user ${userId} updatePerson fail`);
-				}
-			});
-			resolve();
-		});
-	}
 	@bindThis
 	public async process(): Promise<void> {
 		const meta = await this.metaService.fetch();
@@ -64,7 +44,6 @@ export class CleanExpiredRemoteFilesProcessorService {
 		let deletedCount = 0;
 		let cursor: MiDriveFile['id'] | null = null;
 
-		const userIds = new Set<MiDriveFile['userId']>();
 		const expireDate = new Date(Date.now() - (cache_days * 24 * 60 * 60 * 1000));
 		while (true) {
 			const files = await this.driveFilesRepository.find({
@@ -87,15 +66,9 @@ export class CleanExpiredRemoteFilesProcessorService {
 			cursor = files.at(-1)?.id ?? null;
 
 			await Promise.all(files.map(file => this.driveService.deleteFileSync(file, true)));
-			await Promise.all(files.map(file => {
-				if (file.userId) {
-					userIds.add(file.userId);
-				}
-			}));
 
 			deletedCount += 8;
 		}
-		this.updateUsers(userIds);
-		this.logger.succ(`${deletedCount} cached remote files has been deleted. ${JSON.stringify(userIds)}`);
+		this.logger.succ(`${deletedCount} cached remote files has been deleted.`);
 	}
 }
