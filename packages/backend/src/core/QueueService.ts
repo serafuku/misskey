@@ -80,11 +80,12 @@ const REPEATABLE_SYSTEM_JOB_DEF = [{
 	name: 'checkModeratorsActivity',
 	// 毎時30分に起動
 	pattern: '30 * * * *',
-}, {
-	name: 'cleanRemoteNotes',
-	// 毎日午前4時に起動(最も人の少ない時間帯)
-	pattern: '0 4 * * *',
-}];
+},
+																																			{
+																																				name: 'cleanRemoteNotes',
+																																				// 毎日午前4時に起動(最も人の少ない時間帯)
+																																				pattern: '0 4 * * *',
+																																			}];
 
 @Injectable()
 export class QueueService {
@@ -128,6 +129,13 @@ export class QueueService {
 					this.systemQueue.removeJobScheduler(scheduler.key);
 				}
 			}
+		});
+
+		this.objectStorageQueue.add('CleanExpiredRemoteFiles', {
+		}, {
+			repeat: { pattern: '0 * * * *' },
+			removeOnComplete: 10,
+			removeOnFail: 30,
 		});
 	}
 
