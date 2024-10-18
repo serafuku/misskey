@@ -45,6 +45,7 @@ import { CleanProcessorService } from './processors/CleanProcessorService.js';
 import { AggregateRetentionProcessorService } from './processors/AggregateRetentionProcessorService.js';
 import { QueueLoggerService } from './QueueLoggerService.js';
 import { QUEUE, baseQueueOptions } from './const.js';
+import { CleanExpiredRemoteFilesProcessorService } from './processors/CleanExpiredRemoteFilesProcessorService.js';
 
 // ref. https://github.com/misskey-dev/misskey/pull/7635#issue-971097019
 function httpRelatedBackoff(attemptsMade: number) {
@@ -123,6 +124,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private bakeBufferedReactionsProcessorService: BakeBufferedReactionsProcessorService,
 		private checkModeratorsActivityProcessorService: CheckModeratorsActivityProcessorService,
 		private cleanProcessorService: CleanProcessorService,
+		private cleanExpiredRemoteFilesProcessorService: CleanExpiredRemoteFilesProcessorService,
 	) {
 		this.logger = this.queueLoggerService.logger;
 
@@ -468,6 +470,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				switch (job.name) {
 					case 'deleteFile': return this.deleteFileProcessorService.process(job);
 					case 'cleanRemoteFiles': return this.cleanRemoteFilesProcessorService.process(job);
+					case 'CleanExpiredRemoteFiles': return this.cleanExpiredRemoteFilesProcessorService.process();
 					default: throw new Error(`unrecognized job type ${job.name} for objectStorage`);
 				}
 			};
