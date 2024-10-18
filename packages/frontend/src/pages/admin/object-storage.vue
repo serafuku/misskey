@@ -72,6 +72,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #label>s3ForcePathStyle</template>
 						<template #caption>{{ i18n.ts.s3ForcePathStyleDesc }}</template>
 					</MkSwitch>
+
+					<MkInput v-model="objectStorageCacheDays">
+						<template #label>{{ i18n.ts.objectStorageCacheDays }}</template>
+						<template #caption>{{ i18n.ts.objectStorageCacheDaysDesc }}</template>
+					</MkInput>
 				</template>
 			</div>
 		</FormSuspense>
@@ -113,6 +118,7 @@ const objectStorageUseSSL = ref<boolean>(false);
 const objectStorageUseProxy = ref<boolean>(false);
 const objectStorageSetPublicRead = ref<boolean>(false);
 const objectStorageS3ForcePathStyle = ref<boolean>(true);
+const objectStorageCacheDays = ref<number | null>(null);
 
 async function init() {
 	const meta = await misskeyApi('admin/meta');
@@ -130,6 +136,7 @@ async function init() {
 	objectStorageUseProxy.value = meta.objectStorageUseProxy;
 	objectStorageSetPublicRead.value = meta.objectStorageSetPublicRead;
 	objectStorageS3ForcePathStyle.value = meta.objectStorageS3ForcePathStyle;
+	objectStorageCacheDays.value = meta.objectStorageCacheDays;
 }
 
 function save() {
@@ -148,6 +155,7 @@ function save() {
 		objectStorageUseProxy: objectStorageUseProxy.value,
 		objectStorageSetPublicRead: objectStorageSetPublicRead.value,
 		objectStorageS3ForcePathStyle: objectStorageS3ForcePathStyle.value,
+		objectStorageCacheDays: Number(objectStorageCacheDays.value),
 	}).then(() => {
 		fetchInstance(true);
 	});

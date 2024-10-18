@@ -104,6 +104,12 @@ export class QueueService {
 			removeOnFail: 30,
 		});
 
+		this.objectStorageQueue.add('CleanExpiredRemoteFiles', {
+		}, {
+			repeat: { pattern: '0 * * * *' },
+			removeOnComplete: true,
+		});
+
 		this.systemQueue.add('checkExpiredMutings', {
 		}, {
 			repeat: { pattern: '*/5 * * * *' },
