@@ -8358,6 +8358,7 @@ export type operations = {
             objectStorageUseSSL: boolean;
             objectStorageUseProxy: boolean;
             objectStorageSetPublicRead: boolean;
+            objectStorageCacheDays: number | null;
             enableIpLogging: boolean;
             enableActiveEmailValidation: boolean;
             enableVerifymailApi: boolean;
@@ -10714,6 +10715,7 @@ export type operations = {
           objectStorageUseProxy?: boolean;
           objectStorageSetPublicRead?: boolean;
           objectStorageS3ForcePathStyle?: boolean;
+          objectStorageCacheDays?: number | null;
           enableIpLogging?: boolean;
           enableActiveEmailValidation?: boolean;
           enableVerifymailApi?: boolean;
