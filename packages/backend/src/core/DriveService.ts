@@ -703,7 +703,12 @@ export class DriveService {
 		const unlock = await this.appLockService.getApLock(`DriveFile://${fileId}`, 30000);
 
 		const file = await this.driveFilesRepository.findOne({ where: { id: fileId } });
-		if (!file || !file.uri || !file.isLink) return;
+		if (!file || !file.uri || !file.isLink || (file.isSensitive && !this.meta.cacheRemoteSensitiveFiles)) {
+			const reason = (!file || !file.uri || !file.isLink) ? `File URI: ${file?.uri} File isLink: ${file?.isLink}` : `Sensitive: ${file.isSensitive} and Remote Sensitive media Caching is Disabled`;
+			this.registerLogger.debug(`Skip Re-Cache (Reson): ${reason}`);
+			unlock();
+			return;
+		}
 
 		const uri = file.uri;
 		const [path, cleanup] = await createTemp();
