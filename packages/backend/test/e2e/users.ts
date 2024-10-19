@@ -151,6 +151,7 @@ describe('ユーザー', () => {
 			securityKeys: user.securityKeys,
 			...(security ? {
 				email: user.email,
+				signupReason: user.signupReason,
 				emailVerified: user.emailVerified,
 				securityKeysList: user.securityKeysList,
 			} : {}),
@@ -386,6 +387,7 @@ describe('ユーザー', () => {
 		assert.strictEqual(response.usePasswordLessLogin, false);
 		assert.strictEqual(response.securityKeys, false);
 		assert.notStrictEqual(response.email, undefined);
+		assert.notStrictEqual(response.signupReason, undefined);
 		assert.strictEqual(response.emailVerified, false);
 		assert.deepStrictEqual(response.securityKeysList, []);
 	});

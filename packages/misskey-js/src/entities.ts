@@ -49,6 +49,9 @@ export type ModerationLog = {
 	type: 'updateServerSettings';
 	info: ModerationLogPayloads['updateServerSettings'];
 } | {
+	type: 'approve';
+	info: ModerationLogPayloads['approve'];
+} | {
 	type: 'suspend';
 	info: ModerationLogPayloads['suspend'];
 } | {
