@@ -20,6 +20,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts.emailRequiredForSignup }} ({{ i18n.ts.recommended }})</template>
 				</MkSwitch>
 
+				<MkSwitch v-model="approvalRequiredForSignup" @change="onChange_approvalRequiredForSignup">
+					<template #label>{{ i18n.ts.approvalRequiredForSignup }}</template>
+					<template #caption>{{ i18n.ts.registerApprovalEmailRecommended }}</template>
+				</MkSwitch>
+
 				<MkSelect v-model="ugcVisibilityForVisitor" @update:modelValue="onChange_ugcVisibilityForVisitor">
 					<template #label>{{ i18n.ts._serverSettings.userGeneratedContentsVisibilityForVisitor }}</template>
 					<option value="all">{{ i18n.ts._serverSettings._userGeneratedContentsVisibilityForVisitor.all }}</option>
@@ -152,6 +157,7 @@ import MkSelect from '@/components/MkSelect.vue';
 
 const enableRegistration = ref<boolean>(false);
 const emailRequiredForSignup = ref<boolean>(false);
+const approvalRequiredForSignup = ref<boolean>(false);
 const ugcVisibilityForVisitor = ref<string>('all');
 const sensitiveWords = ref<string>('');
 const prohibitedWords = ref<string>('');
@@ -166,6 +172,7 @@ async function init() {
 	const meta = await misskeyApi('admin/meta');
 	enableRegistration.value = !meta.disableRegistration;
 	emailRequiredForSignup.value = meta.emailRequiredForSignup;
+	approvalRequiredForSignup.value = meta.approvalRequiredForSignup;
 	ugcVisibilityForVisitor.value = meta.ugcVisibilityForVisitor;
 	sensitiveWords.value = meta.sensitiveWords.join('\n');
 	prohibitedWords.value = meta.prohibitedWords.join('\n');
@@ -198,6 +205,14 @@ async function onChange_enableRegistration(value: boolean) {
 function onChange_emailRequiredForSignup(value: boolean) {
 	os.apiWithDialog('admin/update-meta', {
 		emailRequiredForSignup: value,
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function onChange_approvalRequiredForSignup(value: boolean) {
+	os.apiWithDialog('admin/update-meta', {
+		approvalRequiredForSignup: value,
 	}).then(() => {
 		fetchInstance(true);
 	});
