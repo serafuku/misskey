@@ -27,6 +27,7 @@ export * as 'admin/announcements/create' from './endpoints/admin/announcements/c
 export * as 'admin/announcements/delete' from './endpoints/admin/announcements/delete.js';
 export * as 'admin/announcements/list' from './endpoints/admin/announcements/list.js';
 export * as 'admin/announcements/update' from './endpoints/admin/announcements/update.js';
+export * as 'admin/approve-user' from './endpoints/admin/approve-user.js';
 export * as 'admin/avatar-decorations/create' from './endpoints/admin/avatar-decorations/create.js';
 export * as 'admin/avatar-decorations/delete' from './endpoints/admin/avatar-decorations/delete.js';
 export * as 'admin/avatar-decorations/list' from './endpoints/admin/avatar-decorations/list.js';
