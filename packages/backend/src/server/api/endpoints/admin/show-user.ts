@@ -23,6 +23,10 @@ export const meta = {
 		type: 'object',
 		nullable: false, optional: false,
 		properties: {
+			approved: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 			email: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -179,6 +183,10 @@ export const meta = {
 					},
 				},
 			},
+			signupReason: {
+				type: 'string', 
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;
@@ -234,6 +242,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				email: profile.email,
 				emailVerified: profile.emailVerified,
 				followedMessage: profile.followedMessage,
+				approved: user.approved,
+				signupReason: user.signupReason,
 				autoAcceptFollowed: profile.autoAcceptFollowed,
 				noCrawle: profile.noCrawle,
 				preventAiLearning: profile.preventAiLearning,
