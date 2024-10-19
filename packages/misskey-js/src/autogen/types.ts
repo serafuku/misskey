@@ -648,6 +648,16 @@ export type paths = {
      */
     post: operations['admin___suspend-user'];
   };
+  '/admin/approve-user': {
+    /**
+     * admin/approve-user
+     * @description No description provided.
+     *
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes* / **Permission**: *write:admin:approve-account*
+     */
+    post: operations['admin___approve-user'];
+  };
   '/admin/unsuspend-user': {
     /**
      * admin/unsuspend-user
@@ -3747,6 +3757,11 @@ export type components = {
        * @example misskey.example.com
        */
       host: string | null;
+      /**
+       * @description User whom registeration is approved or not
+       * @default false
+       */
+      approved: boolean;
       /** Format: url */
       avatarUrl: string | null;
       avatarBlurhash: string | null;
@@ -3836,6 +3851,7 @@ export type components = {
       twoFactorEnabled?: boolean;
       usePasswordLessLogin?: boolean;
       securityKeys?: boolean;
+      approved?: boolean;
       isFollowing?: boolean;
       isFollowed?: boolean;
       hasPendingFollowRequestFromYou?: boolean;
@@ -4995,6 +5011,8 @@ export type components = {
       defaultLightTheme: string | null;
       disableRegistration: boolean;
       emailRequiredForSignup: boolean;
+      /** @default false */
+      approvalRequiredForSignup: boolean;
       enableHcaptcha: boolean;
       hcaptchaSiteKey: string | null;
       enableMcaptcha: boolean;
@@ -5149,6 +5167,7 @@ export type operations = {
             cacheRemoteFiles: boolean;
             cacheRemoteSensitiveFiles: boolean;
             emailRequiredForSignup: boolean;
+            approvalRequiredForSignup: boolean;
             enableHcaptcha: boolean;
             hcaptchaSiteKey: string | null;
             enableMcaptcha: boolean;
@@ -9303,6 +9322,7 @@ export type operations = {
                 expiresAt: string | null;
                 roleId: string;
               })[];
+            signupReason: string | null;
           };
         };
       };
@@ -9358,7 +9378,7 @@ export type operations = {
            * @default all
            * @enum {string}
            */
-          state?: 'all' | 'alive' | 'available' | 'admin' | 'moderator' | 'adminOrModerator' | 'suspended';
+          state?: 'all' | 'alive' | 'available' | 'admin' | 'moderator' | 'adminOrModerator' | 'suspended' | 'pending' | 'approved';
           /**
            * @default combined
            * @enum {string}
@@ -9420,6 +9440,59 @@ export type operations = {
    * **Credential required**: *Yes* / **Permission**: *write:admin:suspend-user*
    */
   'admin___suspend-user': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          userId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/approve-user
+   * @description No description provided.
+   *
+   * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+   * **Credential required**: *Yes* / **Permission**: *write:admin:approve-account*
+   */
+  'admin___approve-user': {
     requestBody: {
       content: {
         'application/json': {
@@ -9553,6 +9626,7 @@ export type operations = {
           cacheRemoteFiles?: boolean;
           cacheRemoteSensitiveFiles?: boolean;
           emailRequiredForSignup?: boolean;
+          approvalRequiredForSignup?: boolean;
           enableHcaptcha?: boolean;
           hcaptchaSiteKey?: string | null;
           hcaptchaSecretKey?: string | null;
