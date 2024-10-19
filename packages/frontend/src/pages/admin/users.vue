@@ -63,7 +63,7 @@ import { Paginator } from '@/utility/paginator.js';
 
 type SearchQuery = {
 	sort?: '-createdAt' | '+createdAt' | '-updatedAt' | '+updatedAt';
-	state?: 'all' | 'available' | 'admin' | 'moderator' | 'suspended';
+	state?: 'all' | 'available' | 'pending' | 'admin' | 'moderator' | 'suspended';
 	origin?: 'combined' | 'local' | 'remote';
 	username?: string;
 	hostname?: string;
@@ -90,6 +90,7 @@ const {
 	items: [
 		{ label: i18n.ts.all, value: 'all' },
 		{ label: i18n.ts.normal, value: 'available' },
+		{ label: i18n.ts.notApproved, value: 'pending' },
 		{ label: i18n.ts.administrator, value: 'admin' },
 		{ label: i18n.ts.moderator, value: 'moderator' },
 		{ label: i18n.ts.suspend, value: 'suspended' },
