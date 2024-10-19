@@ -62,6 +62,11 @@ export const packedUserLiteSchema = {
 			example: 'misskey.example.com',
 			description: 'The local host is represented with `null`.',
 		},
+		approved: {
+			type: 'boolean',
+			nullable: false, optional: true,
+			description: 'Whether registration has been approved.',
+		},
 		avatarUrl: {
 			type: 'string',
 			format: 'url',
@@ -397,6 +402,10 @@ export const packedUserDetailedNotMeOnlySchema = {
 			nullable: false, optional: true,
 		},
 		securityKeys: {
+			type: 'boolean',
+			nullable: false, optional: true,
+		},
+		approved: {
 			type: 'boolean',
 			nullable: false, optional: true,
 		},
