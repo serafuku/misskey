@@ -318,7 +318,7 @@ export const meta = {
 			},
 			objectStorageCacheDays: {
 				type: 'number', 
-				optional: false, nullable: false,
+				optional: false, nullable: true,
 			},
 			enableIpLogging: {
 				type: 'boolean',

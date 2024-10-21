@@ -5200,7 +5200,7 @@ export type operations = {
             objectStorageUseSSL: boolean;
             objectStorageUseProxy: boolean;
             objectStorageSetPublicRead: boolean;
-            objectStorageCacheDays: number;
+            objectStorageCacheDays: number | null;
             enableIpLogging: boolean;
             enableActiveEmailValidation: boolean;
             enableVerifymailApi: boolean;
