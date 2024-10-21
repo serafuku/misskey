@@ -78,11 +78,11 @@ misskeyApi('admin/abuse-user-reports', {
 });
 
 misskeyApi('admin/show-users', {
-	state: 'approved',
+	state: 'pending',
 	origin: 'local',
 	limit: 1,
-}).then(approvals => {
-	if (approvals.length > 0) pendingUserApprovals.value = true;
+}).then(pendings => {
+	if (pendings.length > 0) pendingUserApprovals.value = true;
 });
 
 const NARROW_THRESHOLD = 600;

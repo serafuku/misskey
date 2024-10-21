@@ -9297,6 +9297,7 @@ export type operations = {
                 expiresAt: string | null;
                 roleId: string;
               })[];
+            signupReason: string | null;
           };
         };
       };
@@ -9352,7 +9353,7 @@ export type operations = {
            * @default all
            * @enum {string}
            */
-          state?: 'all' | 'alive' | 'available' | 'admin' | 'moderator' | 'adminOrModerator' | 'suspended' | 'approved';
+          state?: 'all' | 'alive' | 'available' | 'admin' | 'moderator' | 'adminOrModerator' | 'suspended' | 'pending' | 'approved';
           /**
            * @default combined
            * @enum {string}

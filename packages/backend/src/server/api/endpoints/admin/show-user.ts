@@ -176,6 +176,10 @@ export const meta = {
 					},
 				},
 			},
+			signupReason: {
+				type: 'string', 
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;

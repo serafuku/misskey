@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #label>{{ i18n.ts.emailRequiredForSignup }}</template>
 					</MkSwitch>
 
-					<MkSwitch v-model="approvalRequiredForSignup">
+					<MkSwitch v-model="approvalRequiredForSignup" @change="onChange_approvalRequiredForSignup">
 						<template #label>{{ i18n.ts.approvalRequiredForSignup }}</template>
 						<template #caption>{{ i18n.ts.registerApprovalEmailRecommended }}</template>
 					</MkSwitch>
@@ -182,6 +182,14 @@ function onChange_enableRegistration(value: boolean) {
 function onChange_emailRequiredForSignup(value: boolean) {
 	os.apiWithDialog('admin/update-meta', {
 		emailRequiredForSignup: value,
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function onChange_approvalRequiredForSignup(value: boolean) {
+	os.apiWithDialog('admin/update-meta', {
+		approvalRequiredForSignup: value,
 	}).then(() => {
 		fetchInstance(true);
 	});
