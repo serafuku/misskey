@@ -1,3 +1,7 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
 export class DriveFileCacheExpire1729234755418 {
 	name = 'DriveFileCacheExpire1729234755418';

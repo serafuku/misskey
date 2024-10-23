@@ -458,12 +458,12 @@ export function getNoteMenu(props: {
 					action: delEdit,
 				});
 			}
-			if(appearNote.userId === $i.id && $i.policies.canEditNote) {
+			if (appearNote.userId === $i.id && $i.policies.canEditNote) {
 				menuItems.push({
 					icon: 'ti ti-edit',
 					text: i18n.ts.edit,
 					action: edit,
-				})
+				});
 			}
 			menuItems.push({
 				icon: 'ti ti-trash',

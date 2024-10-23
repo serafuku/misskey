@@ -54,11 +54,7 @@ export class DeleteAccountService {
 
 			const queue: string[] = [];
 			
-			const inboxes = await this.usersRepository.createQueryBuilder('user')
-				.select('user.sharedInbox')
-				.distinctOn(['user.sharedInbox'])
-				.where('user.sharedInbox IS NOT NULL')
-				.getMany();
+			const inboxes = await this.usersRepository.query('SELECT DISTINCT "sharedInbox" from "user" AS U INNER JOIN instance AS I ON U.host = I.host WHERE (I."followersCount" > 0 OR I."followingCount" > 0)');
 
 			for (const inbox of inboxes) {
 				if (inbox.sharedInbox != null) queue.push(inbox.sharedInbox);
