@@ -57,25 +57,29 @@ export class CleanExpiredRemoteFilesProcessorService {
 			let counter = 0;
 
 			for (const uid of userIds) {
-				await this.db.transaction(async (entityManager) => {
-					const user = await entityManager.findOneBy(MiUser, { id: uid });
-					if (!user) return;
-					const userAvatarFile = user.avatarId != null ? await entityManager.findOneBy(MiDriveFile, { id: user.avatarId }) : null;
-					const userBannerFile = user.bannerId != null ? await entityManager.findOneBy(MiDriveFile, { id: user.bannerId }) : null;
-					const update: Partial<MiUser> = {};
-					if (userAvatarFile?.isLink) {
-						update.avatarUrl = userAvatarFile.uri != null ? this.getProxiedUrl(userAvatarFile.uri, 'avatar') : null;
-					}
-					if (userBannerFile?.isLink) {
-						update.bannerUrl = userBannerFile.uri != null ? this.getProxiedUrl(userBannerFile.uri, 'static') : null;
-					}
-					
-					if (update.avatarUrl != null || update.bannerUrl != null) {
-						counter++;
-						this.logger.debug(`Update User ${user.id}'s avatar / banner URL...: ${JSON.stringify(update)}`);
-						await entityManager.update(MiUser, { id: user.id }, update);
-					}
-				});
+				try {
+					await this.db.transaction(async (entityManager) => {
+						const user = await entityManager.findOneBy(MiUser, { id: uid });
+						if (!user) return;
+						const userAvatarFile = user.avatarId != null ? await entityManager.findOneBy(MiDriveFile, { id: user.avatarId }) : null;
+						const userBannerFile = user.bannerId != null ? await entityManager.findOneBy(MiDriveFile, { id: user.bannerId }) : null;
+						const update: Partial<MiUser> = {};
+						if (userAvatarFile?.isLink) {
+							update.avatarUrl = userAvatarFile.uri != null ? this.getProxiedUrl(userAvatarFile.uri, 'avatar') : null;
+						}
+						if (userBannerFile?.isLink) {
+							update.bannerUrl = userBannerFile.uri != null ? this.getProxiedUrl(userBannerFile.uri, 'static') : null;
+						}
+						
+						if (update.avatarUrl != null || update.bannerUrl != null) {
+							counter++;
+							this.logger.debug(`Update User ${user.id}'s avatar / banner URL...: ${JSON.stringify(update)}`);
+							await entityManager.update(MiUser, { id: user.id }, update);
+						}
+					});
+				} catch (err) {
+					this.logger.warn(JSON.stringify(err));
+				}
 			}
 			
 			this.logger.info(`Updated ${counter} avatar/banner URL`);
