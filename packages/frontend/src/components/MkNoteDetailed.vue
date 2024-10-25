@@ -591,9 +591,8 @@ function loadHistories() {
 			};
 			histories.value.push(current_version);
 		}
-		if (res.length === 0) {
+		if (res.length < 5) {
 			history_list_end.value = true;
-			return;
 		}
 		histories_untilId.value = res[ res.length - 1 ].id;
 		histories.value = histories.value.concat(res);
