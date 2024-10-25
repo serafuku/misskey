@@ -68,7 +68,7 @@ export class CleanExpiredRemoteFilesProcessorService {
 							update.avatarUrl = userAvatarFile.uri != null ? this.getProxiedUrl(userAvatarFile.uri, 'avatar') : null;
 						}
 						if (userBannerFile?.isLink) {
-							update.bannerUrl = userBannerFile.uri != null ? this.getProxiedUrl(userBannerFile.uri, 'static') : null;
+							update.bannerUrl = userBannerFile.uri != null ? this.getProxiedUrl(userBannerFile.uri) : null;
 						}
 						
 						if (update.avatarUrl != null || update.bannerUrl != null) {
