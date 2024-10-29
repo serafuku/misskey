@@ -695,8 +695,9 @@ export class DriveService {
 			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
 			switch (type) {
 				case 'remoteFileCacheMiss': {
+					if (!this.meta.cacheRemoteFiles) return;
 					const fileId = body.fileId;
-					await this.reCacheFile(fileId);
+					this.queueService.createReDownloadRemoteFileJob(fileId);
 					break;
 				}
 				default:
@@ -722,7 +723,6 @@ export class DriveService {
 		const [path, cleanup] = await createTemp();
 
 		try {
-			this.registerLogger.info(`Re-Caching Remote File... ${file.uri}`);
 			const { filename: name } = await this.downloadService.downloadUrl(uri, path);
 			const info = await this.fileInfoService.getFileInfo(path, {
 				skipSensitiveDetection: true,
