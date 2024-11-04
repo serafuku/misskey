@@ -12,6 +12,7 @@ import { GlobalTimelineChannelService } from './channels/global-timeline.js';
 import { MainChannelService } from './channels/main.js';
 import { ChannelChannelService } from './channels/channel.js';
 import { AdminChannelService } from './channels/admin.js';
+import { AdminAllNoteChannelService } from './channels/admin-allnote.js';
 import { ServerStatsChannelService } from './channels/server-stats.js';
 import { QueueStatsChannelService } from './channels/queue-stats.js';
 import { UserListChannelService } from './channels/user-list.js';
@@ -40,6 +41,7 @@ export class ChannelsService {
 		private serverStatsChannelService: ServerStatsChannelService,
 		private queueStatsChannelService: QueueStatsChannelService,
 		private adminChannelService: AdminChannelService,
+		private adminAllNoteChannelService: AdminAllNoteChannelService,
 		private reversiChannelService: ReversiChannelService,
 		private reversiGameChannelService: ReversiGameChannelService,
 	) {
@@ -62,6 +64,7 @@ export class ChannelsService {
 			case 'serverStats': return this.serverStatsChannelService;
 			case 'queueStats': return this.queueStatsChannelService;
 			case 'admin': return this.adminChannelService;
+			case '__adminAllNote': return this.adminAllNoteChannelService;
 			case 'reversi': return this.reversiChannelService;
 			case 'reversiGame': return this.reversiGameChannelService;
 

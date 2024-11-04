@@ -32,6 +32,7 @@ import { OAuth2ProviderService } from './oauth/OAuth2ProviderService.js';
 
 import { MainChannelService } from './api/stream/channels/main.js';
 import { AdminChannelService } from './api/stream/channels/admin.js';
+import { AdminAllNoteChannelService } from './api/stream/channels/admin-allnote.js';
 import { AntennaChannelService } from './api/stream/channels/antenna.js';
 import { ChannelChannelService } from './api/stream/channels/channel.js';
 import { DriveChannelService } from './api/stream/channels/drive.js';
@@ -78,6 +79,7 @@ import { SigninWithPasskeyApiService } from './api/SigninWithPasskeyApiService.j
 		StreamingApiServerService,
 		MainChannelService,
 		AdminChannelService,
+		AdminAllNoteChannelService,
 		AntennaChannelService,
 		ChannelChannelService,
 		DriveChannelService,
