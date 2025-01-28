@@ -1,0 +1,15 @@
+FROM postgres:16-bookworm
+
+RUN apt update
+RUN apt install -y ca-certificates lsb-release wget
+RUN wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+RUN apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+RUN wget https://packages.groonga.org/debian/groonga-apt-source-latest-$(lsb_release --codename --short).deb
+RUN apt install -y -V ./groonga-apt-source-latest-$(lsb_release --codename --short).deb
+RUN apt update
+RUN apt install -y postgresql-16-pgdg-pgroonga
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+EXPOSE 5432
+CMD ["postgres"]
+
