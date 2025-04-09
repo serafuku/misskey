@@ -2145,14 +2145,14 @@ declare namespace entities {
         MetaDetailed,
         SystemWebhook,
         AbuseReportNotificationRecipient,
-        NoteHistory,
         ChatMessage,
         ChatMessageLite,
         ChatMessageLiteFor1on1,
         ChatMessageLiteForRoom,
         ChatRoom,
         ChatRoomInvitation,
-        ChatRoomMembership
+        ChatRoomMembership,
+        NoteHistory
     }
 }
 export { entities }
