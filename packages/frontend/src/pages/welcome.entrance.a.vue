@@ -7,8 +7,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div v-if="meta" :class="$style.root">
 	<MkFeaturedPhotos :class="$style.bg"/>
 	<XTimeline :class="$style.tl"/>
-	<div :class="$style.shape1"></div>
-	<div :class="$style.shape2"></div>
 	<div :class="$style.logoWrapper">
 		<div :class="$style.poweredBy">Powered by</div>
 		<img :src="misskeysvg" :class="$style.misskey"/>
@@ -70,7 +68,7 @@ misskeyApiGet('federation/instances', {
 	position: fixed;
 	top: 0;
 	right: 0;
-	width: 80vw; // 100%からshapeの幅を引いている
+	width: 100vw; // 100%からshapeの幅を引いている
 	height: 100vh;
 }
 
