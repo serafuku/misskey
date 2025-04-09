@@ -71,6 +71,7 @@
 		codeBoolean: '#62b70c',
 		deckBg: ':darken<3<@bg',
 		htmlThemeColor: '@bg',
+		visitorDashboardColor: 'rgba(255,255,255,0.85)',
 	},
 
 	codeHighlighter: {
