@@ -4,27 +4,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div>
-	<MkStickyContainer>
-		<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
-		<MkSpacer :contentMax="900">
-			<div class="_gaps_m">
-				<MkPagination ref="paginationComponent" :pagination="pagination">
-					<template #default="{ items }">
-						<div class="_gaps_s">
-							<MkApprovalUser v-for="item in items" :key="item.id" :user="item" :onDeleted="deleted"/>
-						</div>
-					</template>
-				</MkPagination>
-			</div>
-		</MkSpacer>
-	</MkStickyContainer>
-</div>
+<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+	<div class="_spacer" style="--MI_SPACER-w: 900px;">
+		<div class="_gaps_m">
+			<MkPagination ref="paginationComponent" :pagination="pagination">
+				<template #default="{ items }">
+					<div class="_gaps_s">
+						<MkApprovalUser v-for="item in items" :key="item.id" :user="item" :onDeleted="deleted"/>
+					</div>
+				</template>
+			</MkPagination>
+		</div>
+	</div>
+</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
 import { computed, shallowRef } from 'vue';
-import XHeader from './_header_.vue';
+
 import MkPagination from '@/components/MkPagination.vue';
 import MkApprovalUser from '@/components/MkApprovalUser.vue';
 import { i18n } from '@/i18n.js';
