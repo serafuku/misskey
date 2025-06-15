@@ -897,17 +897,17 @@ async function post(ev?: MouseEvent) {
 		}
 
 		if (props.updateMode) {
-			if (res?.createdNote) {
-				noteEvents.emit(`edited:${res.createdNote['id']}`, {
-					noteId: res.createdNote['id'],
+			if (res?.updatedNote) {
+				noteEvents.emit(`edited:${res.updatedNote['id']}`, {
+					noteId: res.updatedNote['id'],
 					editBody: {
-						updatedAt: res.createdNote['updatedAt'],
-						cw: res.createdNote['cw'],
-						text: res.createdNote['text'],
-						files: res.createdNote['files'],
-						fileIds: res.createdNote['fileIds'],
-						poll: res.createdNote['poll'],
-						emojis: res.createdNote['emojis'],
+						updatedAt: res.updatedNote['updatedAt'],
+						cw: res.updatedNote['cw'],
+						text: res.updatedNote['text'],
+						files: res.updatedNote['files'],
+						fileIds: res.updatedNote['fileIds'],
+						poll: res.updatedNote['poll'],
+						emojis: res.updatedNote['emojis'],
 					},
 				});
 			}

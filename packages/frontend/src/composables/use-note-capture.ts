@@ -130,6 +130,7 @@ function realtimeSubscribe(props: {
 
 	function onStreamNoteUpdated(noteData): void {
 		const { type, id, body } = noteData;
+		console.log('type' + type);
 
 		if (id !== note.id) return;
 
@@ -166,6 +167,7 @@ function realtimeSubscribe(props: {
 			}
 
 			case 'updated': {
+				console.log(`emit updated event id: ${id}, body: ${JSON.stringify(body)}`);
 				noteEvents.emit(`edited:${id}`, {
 					noteId: id,
 					editBody: {
@@ -319,13 +321,14 @@ export function useNoteCapture(props: {
 	}
 
 	function onEdited(ctx: { noteId: Misskey.entities.Note['id']; editBody: NoteEditBody }) {
-		$note.editBody.updatedAt = new Date().toISOString();
-		$note.editBody.cw = ctx.editBody.cw;
-		$note.editBody.text = ctx.editBody.text;
-		$note.editBody.files = ctx.editBody.files;
-		$note.editBody.fileIds = ctx.editBody.fileIds;
-		$note.editBody.poll = ctx.editBody.poll;
-		$note.editBody.emojis = ctx.editBody.emojis;
+		console.log(`onEdited2 ${ctx.noteId}, ${JSON.stringify(ctx.editBody)}`);
+		note.updatedAt = new Date().toISOString();
+		note.cw = ctx.editBody.cw;
+		note.text = ctx.editBody.text;
+		note.files = ctx.editBody.files;
+		note.fileIds = ctx.editBody.fileIds;
+		note.poll = ctx.editBody.poll;
+		note.emojis = ctx.editBody.emojis;
 	}
 
 	function subscribe() {
