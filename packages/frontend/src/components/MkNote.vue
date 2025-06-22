@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="appearNote.channel" :class="$style.colorBar" :style="{ background: appearNote.channel.color }"></div>
 		<MkAvatar :class="[$style.avatar, prefer.s.useStickyIcons ? $style.useSticky : null]" :user="appearNote.user" :link="!mock" :preview="!mock"/>
 		<div :class="$style.main">
-			<MkNoteHeader :note="appearNote" :mini="true"/>
+			<MkNoteHeader :note="appearNote" :updatedAt="$appearNote.updatedAt" :mini="true"/>
 			<MkInstanceTicker v-if="showTicker" :host="appearNote.user.host" :instance="appearNote.user.instance"/>
 			<div style="container-type: inline-size;">
 				<p v-if="$appearNote.cw != null" :class="$style.cw">
@@ -298,10 +298,10 @@ const clipButton = useTemplateRef('clipButton');
 const galleryEl = useTemplateRef('galleryEl');
 const isMyRenote = $i && ($i.id === note.userId);
 const showContent = ref(false);
-const parsed = computed(() => appearNote.text ? mfm.parse(appearNote.text) : null);
+const parsed = computed(() => $appearNote.text ? mfm.parse($appearNote.text) : null);
 const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url) : null);
 const isLong = shouldCollapsed(appearNote, urls.value ?? []);
-const collapsed = ref(appearNote.cw == null && isLong);
+const collapsed = ref($appearNote.cw == null && isLong);
 const muted = ref(checkMute(appearNote, $i?.mutedWords));
 const hardMuted = ref(props.withHardMute && checkMute(appearNote, $i?.hardMutedWords, true));
 const showSoftWordMutedWord = computed(() => prefer.s.showSoftWordMutedWord);

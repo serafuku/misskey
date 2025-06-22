@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<img v-for="(role, i) in note.user.badgeRoles" :key="i" v-tooltip="role.name" :class="$style.badgeRole" :src="role.iconUrl!"/>
 	</div>
 	<div :class="$style.info">
-		<span v-if="note.updatedAt" style="margin-right: 0.5em;"><i v-tooltip="i18n.tsx.noteUpdatedAt({ date: (new Date(note.updatedAt)).toLocaleDateString(), time: (new Date(note.updatedAt)).toLocaleTimeString() })" class="ti ti-pencil"></i></span>
+		<span v-if="updatedAt" style="margin-right: 0.5em;"><i v-tooltip="i18n.tsx.noteUpdatedAt({ date: (new Date(updatedAt)).toLocaleDateString(), time: (new Date(updatedAt)).toLocaleTimeString() })" class="ti ti-pencil"></i></span>
 		<span v-if="note.visibility !== 'public'" style="margin-right: 0.5em;">
 				<i v-if="note.visibility === 'home'" v-tooltip="i18n.ts._visibility[note.visibility]" class="ti ti-home"></i>
 				<i v-else-if="note.visibility === 'followers'" v-tooltip="i18n.ts._visibility[note.visibility]" class="ti ti-lock"></i>
@@ -51,6 +51,7 @@ import { DI } from '@/di.js';
 
 defineProps<{
 	note: Misskey.entities.Note;
+	updatedAt?: string | null;
 }>();
 
 const mock = inject(DI.mock, false);
