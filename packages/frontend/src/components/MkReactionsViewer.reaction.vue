@@ -38,7 +38,6 @@ import { prefer } from '@/preferences.js';
 import { DI } from '@/di.js';
 import { noteEvents } from '@/composables/use-note-capture.js';
 import { mute as muteEmoji, unmute as unmuteEmoji, checkMuted as isEmojiMuted } from '@/utility/emoji-mute.js';
-import { note } from '.storybook/fakes';
 import { haptic } from '@/utility/haptic.js';
 
 const props = defineProps<{
@@ -60,65 +59,63 @@ const buttonEl = useTemplateRef('buttonEl');
 
 const emojiName = computed(() => props.reaction.replace(/:/g, '').replace(/@\./, ''));
 const emojiNameWithoutHost = computed(() => emojiName.value.replace(/@[\w.]+/, ''));
-const localEmoji = computed(() => props.reaction.includes(':') ? customEmojisMap.get(emojiNameWithoutHost.value) : getUnicodeEmoji(props.reaction));
+const localOrUnicodeEmoji = computed(() => props.reaction.includes(':') ? customEmojisMap.get(emojiNameWithoutHost.value) : getUnicodeEmoji(props.reaction));
 
-const canToggle = computed(() => {
-	const emoji = customEmojisMap.get(emojiName.value) ?? getUnicodeEmoji(props.reaction);
-
-	// TODO
-	//return $i && localEmoji.value && checkReactionPermissions($i, props.note, localEmoji.value);
-	return !props.reaction.match(/@\w/) && $i && localEmoji.value;
-});
-const canGetInfo = computed(() => props.reaction.includes(':') && localEmoji.value);
+const canToggle = computed(() => $i && localOrUnicodeEmoji.value);
+const canGetInfo = computed(() => props.reaction.includes(':') && localOrUnicodeEmoji.value);
 const isLocalCustomEmoji = props.reaction[0] === ':' && props.reaction.includes('@.');
 
 async function toggleReaction() {
 	if (!canToggle.value) return;
-	if ($i == null) return;
+	if (!localOrUnicodeEmoji.value) return;
+	if ($i === null) return;
 
 	const me = $i;
 
 	const oldReaction = props.myReaction;
 	const selected = props.reaction.includes(':') ? `:${emojiNameWithoutHost.value}:` : props.reaction;
+	// 이미 기존에 내가 찍은 리액션이 있다면?
 	if (oldReaction) {
+		// 모달 보여주기
 		const confirm = await os.confirm({
 			type: 'warning',
+			// 기존에 내가 찍은 리액션과 새로 찍을 리액션이 같지 않다면 리액션 변경, 같다면 리액션 취소
 			text: oldReaction !== props.reaction ? i18n.ts.changeReactionConfirm : i18n.ts.cancelReactionConfirm,
 		});
 		if (confirm.canceled) return;
-
-		if (oldReaction !== props.reaction) {
-			sound.playMisskeySfx('reaction');
-			haptic();
-		}
 
 		if (mock) {
 			emit('reactionToggled', props.reaction, (props.count - 1));
 			return;
 		}
 
-		misskeyApi('notes/reactions/delete', {
-			noteId: props.noteId,
-		}).then(() => {
+		sound.playMisskeySfx('reaction');
+		haptic();
+
+		// 기존에 내가 찍은 리액션과 새로 찍은 리액션이 같지 않다면 리액션 변경
+		if (oldReaction !== props.reaction) {
+			await misskeyApi('notes/reactions/delete', { noteId: props.noteId });
 			noteEvents.emit(`unreacted:${props.noteId}`, {
 				userId: me.id,
 				reaction: oldReaction,
 			});
-			if (oldReaction !== props.reaction) {
-				misskeyApi('notes/reactions/create', {
-					noteId: props.noteId,
-					reaction: selected,
-				}).then(() => {
-					const emoji = customEmojisMap.get(emojiName.value);
-					if (emoji == null) return;
-					noteEvents.emit(`reacted:${props.noteId}`, {
-						userId: me.id,
-						reaction: props.reaction,
-						emoji: localEmoji.value,
-					});
-				});
-			}
-		});
+
+			await misskeyApi('notes/reactions/create', { noteId: props.noteId, reaction: selected });
+			noteEvents.emit(`reacted:${props.noteId}`, {
+				userId: me.id,
+				reaction: selected,
+				emoji: localOrUnicodeEmoji.value,
+			});
+
+		// 기존에 내가 찍은 리액션과 새로 찍은 리액션이 같다면 리액션 취소
+		} else {
+			await misskeyApi('notes/reactions/delete', { noteId: props.noteId });
+			noteEvents.emit(`unreacted:${props.noteId}`, {
+				userId: me.id,
+				reaction: oldReaction,
+			});
+		}
+	// 기존에 내가 찍은 리액션이 없다면?
 	} else {
 		if (prefer.s.confirmOnReact) {
 			const confirm = await os.confirm({
@@ -147,7 +144,7 @@ async function toggleReaction() {
 			noteEvents.emit(`reacted:${props.noteId}`, {
 				userId: me.id,
 				reaction: props.reaction,
-				emoji: localEmoji.value,
+				emoji: localOrUnicodeEmoji.value,
 			});
 		});
 		// TODO: 上位コンポーネントでやる
@@ -167,7 +164,8 @@ async function menu(ev) {
 			action: async () => {
 				const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 					emoji: await misskeyApiGet('emoji', {
-						name: props.reaction.replace(/:/g, '').replace(/@\./, ''),
+						// name: props.reaction.replace(/:/g, '').replace(/@\./, ''),
+						name: emojiNameWithoutHost.value,
 					}),
 				}, {
 					closed: () => dispose(),
