@@ -113,12 +113,12 @@ function onClick(ev: MouseEvent) {
 			text: `:${props.name}:`,
 		});
 
-		if (isLocal.value) {
+		if (localEmoji.value.name) {
 			menuItems.push({
 				text: i18n.ts.copy,
 				icon: 'ti ti-copy',
 				action: () => {
-					copyToClipboard(`:${props.name}:`);
+					copyToClipboard(`:${customEmojiNameWithoutHost.value}:`);
 				},
 			});
 		}
@@ -133,7 +133,7 @@ function onClick(ev: MouseEvent) {
 			});
 		}
 
-		if (isLocal.value) {
+		if (localEmoji.value.name) {
 			menuItems.push({
 				type: 'divider',
 			}, {
@@ -142,7 +142,7 @@ function onClick(ev: MouseEvent) {
 				action: async () => {
 					const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 						emoji: await misskeyApiGet('emoji', {
-							name: customEmojiName.value,
+							name: customEmojiNameWithoutHost.value,
 						}),
 					}, {
 						closed: () => dispose(),
