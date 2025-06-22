@@ -158,6 +158,7 @@ import { checkDragDataType, getDragData } from '@/drag-and-drop.js';
 import { useUploader } from '@/composables/use-uploader.js';
 import { startTour } from '@/utility/tour.js';
 import { closeTip } from '@/tips.js';
+import { noteEvents } from '@/composables/use-note-capture';
 
 const $i = ensureSignin();
 
@@ -1059,7 +1060,9 @@ async function post(ev?: MouseEvent) {
 			clear();
 		}
 
-		globalEvents.emit('notePosted', res.createdNote);
+		if (!props.updateMode) {
+			globalEvents.emit('notePosted', res.createdNote);
+		};
 
 		nextTick(() => {
 			deleteDraft();
