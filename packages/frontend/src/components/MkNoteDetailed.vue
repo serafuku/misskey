@@ -75,25 +75,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.noteContent">
 			<p v-if="appearNote.cw != null" :class="$style.cw">
 				<Mfm
-					v-if="appearNote.cw != ''"
-					:text="appearNote.cw"
+					v-if="$appearNote.cw != ''"
+					:text="$appearNote.cw"
 					:author="appearNote.user"
 					:nyaize="'respect'"
 					:enableEmojiMenu="true"
 					:enableEmojiMenuReaction="true"
 				/>
-				<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll"/>
+				<MkCwButton v-model="showContent" :text="$appearNote.text" :renote="appearNote.renote" :files="$appearNote.files" :poll="$appearNote.poll"/>
 			</p>
-			<div v-show="appearNote.cw == null || showContent">
+			<div v-show="$appearNote.cw == null || showContent">
 				<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 				<MkA v-if="appearNote.replyId" :class="$style.noteReplyTarget" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
 				<Mfm
-					v-if="appearNote.text"
+					v-if="$appearNote.text"
 					:parsedNodes="parsed"
-					:text="appearNote.text"
+					:text="$appearNote.text"
 					:author="appearNote.user"
 					:nyaize="'respect'"
-					:emojiUrls="appearNote.emojis"
+					:emojiUrls="$appearNote.emojis"
 					:enableEmojiMenu="true"
 					:enableEmojiMenuReaction="true"
 					class="_selectable"
@@ -110,13 +110,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkMediaList ref="galleryEl" :mediaList="appearNote.files"/>
 				</div>
 				<MkPoll
-					v-if="appearNote.poll"
+					v-if="$appearNote.poll"
 					:noteId="appearNote.id"
-					:multiple="appearNote.poll.multiple"
-					:expiresAt="appearNote.poll.expiresAt"
+					:multiple="$appearNote.poll.multiple"
+					:expiresAt="$appearNote.poll.expiresAt"
 					:choices="$appearNote.pollChoices"
 					:author="appearNote.user"
-					:emojiUrls="appearNote.emojis"
+					:emojiUrls="$appearNote.emojis"
 					:class="$style.poll"
 				/>
 				<div v-if="isEnabledUrlPreview">
@@ -132,9 +132,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkTime :time="appearNote.createdAt" mode="detail" colored/>
 				</MkA>
 			</div>
-			<div v-if="appearNote.updatedAt" style="margin-top: 0; opacity: 0.7; font-size: 0.7em;">
-				<MkA :to="notePage(appearNote)">
-					{{ i18n.ts.updatedAt }}: <MkTime :time="appearNote.updatedAt" mode="detail"/>
+			<div v-if="$appearNote.updatedAt" style="margin-top: 0; opacity: 0.7; font-size: 0.7em;">
+				<MkA :to="notePage($appearNote)">
+					{{ i18n.ts.updatedAt }}: <MkTime :time="$appearNote.updatedAt" mode="detail"/>
 				</MkA>
 			</div>
 			<MkReactionsViewer
@@ -349,8 +349,8 @@ const isDeleted = ref(false);
 const muted = ref($i ? checkWordMute(appearNote, $i, $i.mutedWords) : false);
 const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
 const translating = ref(false);
-const parsed = appearNote.text ? mfm.parse(appearNote.text) : null;
-const urls = parsed ? extractUrlFromMfm(parsed).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url) : null;
+const parsed = computed(() => $appearNote.text ? mfm.parse($appearNote.text) : null);
+const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url) : null);
 const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceTicker === 'remote' && appearNote.user.instance);
 const conversation = ref<Misskey.entities.Note[]>([]);
 const replies = ref<Misskey.entities.Note[]>([]);
@@ -634,11 +634,11 @@ function loadHistories() {
 	historiesLoaded.value = true;
 	misskeyApi('notes/history', {
 		...(histories_untilId.value ? { untilId: histories_untilId.value } : {} ),
-		noteId: appearNote.value.id,
+		noteId: appearNote.id,
 		limit: 5,
 	}).then(res => {
 		if (histories.value.length === 0) {
-			const current_note = appearNote.value;
+			const current_note = appearNote;
 			const current_version: Misskey.entities.NoteHistory = {
 				id: current_note.id,
 				noteId: current_note.id,

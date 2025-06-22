@@ -49,7 +49,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { CodeDiff } from 'v-code-diff';
 import { userPage } from '@/filters/user.js';
@@ -61,7 +60,7 @@ const props = defineProps<{
 	newNote: Misskey.entities.NoteHistory;
 	originalNote: Misskey.entities.Note;
 	detail?: boolean;
-	raw:boolean;
+	raw: boolean;
 
 	// 현재 표시하는 노트의 인덱스
 	index: number;

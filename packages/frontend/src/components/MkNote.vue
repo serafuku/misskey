@@ -46,28 +46,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="appearNote.channel" :class="$style.colorBar" :style="{ background: appearNote.channel.color }"></div>
 		<MkAvatar :class="[$style.avatar, prefer.s.useStickyIcons ? $style.useSticky : null]" :user="appearNote.user" :link="!mock" :preview="!mock"/>
 		<div :class="$style.main">
-			<MkNoteHeader :note="appearNote" :mini="true"/>
+			<MkNoteHeader :note="appearNote" :updatedAt="$appearNote.updatedAt" :mini="true"/>
 			<MkInstanceTicker v-if="showTicker" :host="appearNote.user.host" :instance="appearNote.user.instance"/>
 			<div style="container-type: inline-size;">
-				<p v-if="appearNote.cw != null" :class="$style.cw">
+				<p v-if="$appearNote.cw != null" :class="$style.cw">
 					<Mfm
-						v-if="appearNote.cw != ''"
-						:text="appearNote.cw"
+						v-if="$appearNote.cw != ''"
+						:text="$appearNote.cw"
 						:author="appearNote.user"
 						:nyaize="'respect'"
 						:enableEmojiMenu="true"
 						:enableEmojiMenuReaction="true"
 					/>
-					<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;"/>
+					<MkCwButton v-model="showContent" :text="$appearNote.text" :renote="appearNote.renote" :files="$appearNote.files" :poll="$appearNote.poll" style="margin: 4px 0;"/>
 				</p>
-				<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
+				<div v-show="$appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 					<div :class="$style.text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
 						<Mfm
-							v-if="appearNote.text"
+							v-if="$appearNote.text"
 							:parsedNodes="parsed"
-							:text="appearNote.text"
+							:text="$appearNote.text"
 							:author="appearNote.user"
 							:nyaize="'respect'"
 							:emojiUrls="appearNote.emojis"
@@ -87,10 +87,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkMediaList ref="galleryEl" :mediaList="appearNote.files"/>
 					</div>
 					<MkPoll
-						v-if="appearNote.poll"
+						v-if="$appearNote.poll"
 						:noteId="appearNote.id"
-						:multiple="appearNote.poll.multiple"
-						:expiresAt="appearNote.poll.expiresAt"
+						:multiple="$appearNote.poll.multiple"
+						:expiresAt="$appearNote.poll.expiresAt"
 						:choices="$appearNote.pollChoices"
 						:author="appearNote.user"
 						:emojiUrls="appearNote.emojis"
@@ -296,10 +296,10 @@ const clipButton = useTemplateRef('clipButton');
 const galleryEl = useTemplateRef('galleryEl');
 const isMyRenote = $i && ($i.id === note.userId);
 const showContent = ref(false);
-const parsed = computed(() => appearNote.text ? mfm.parse(appearNote.text) : null);
+const parsed = computed(() => $appearNote.text ? mfm.parse($appearNote.text) : null);
 const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url) : null);
 const isLong = shouldCollapsed(appearNote, urls.value ?? []);
-const collapsed = ref(appearNote.cw == null && isLong);
+const collapsed = ref($appearNote.cw == null && isLong);
 const muted = ref(checkMute(appearNote, $i?.mutedWords));
 const hardMuted = ref(props.withHardMute && checkMute(appearNote, $i?.hardMutedWords, true));
 const showSoftWordMutedWord = computed(() => prefer.s.showSoftWordMutedWord);
