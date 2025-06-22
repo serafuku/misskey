@@ -402,16 +402,31 @@ const keymap = {
 } as const satisfies Keymap;
 
 provide(DI.mfmEmojiReactCallback, (reaction) => {
-	sound.playMisskeySfx('reaction');
-	misskeyApi('notes/reactions/create', {
-		noteId: appearNote.id,
-		reaction: reaction,
-	}).then(() => {
+	if (appearNote.myReaction) {
+		sound.playMisskeySfx('reaction');
+		misskeyApi('notes/reactions/delete', {
+			noteId: appearNote.id,
+		}).then(() => {
+			misskeyApi('notes/reactions/create', {
+				noteId: appearNote.id,
+				reaction: reaction,
+			});
+			noteEvents.emit(`reacted:${appearNote.id}`, {
+				userId: $i!.id,
+				reaction: reaction,
+			});
+		});
+	} else {
+		sound.playMisskeySfx('reaction');
+		misskeyApi('notes/reactions/create', {
+			noteId: appearNote.id,
+			reaction: reaction,
+		});
 		noteEvents.emit(`reacted:${appearNote.id}`, {
 			userId: $i!.id,
 			reaction: reaction,
 		});
-	});
+	}
 });
 
 if (!props.mock) {
