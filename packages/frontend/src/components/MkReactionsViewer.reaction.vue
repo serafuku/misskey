@@ -70,6 +70,7 @@ const isLocalCustomEmoji = props.reaction[0] === ':' && props.reaction.includes(
 
 async function toggleReaction() {
 	if (!canToggle.value) return;
+	if (!localEmoji.value) return;
 
 	const oldReaction = props.myReaction;
 	const selected = props.reaction.includes(':') ? `:${emojiNameWithoutHost.value}:` : props.reaction;

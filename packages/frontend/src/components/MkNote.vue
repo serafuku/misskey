@@ -408,34 +408,17 @@ provide(DI.mfmEmojiReactCallback, (reaction) => {
 		sound.playMisskeySfx('reaction');
 		misskeyApi('notes/reactions/delete', {
 			noteId: appearNote.id,
-		})
-			.then(() => {
-				noteEvents.emit(`unreacted:${appearNote.id}`, {
-					userId: $i!.id,
-					reaction: reaction,
-				});
-			})
-			.then(() => {
-				misskeyApi('notes/reactions/create', {
-					noteId: appearNote.id,
-					reaction: reaction,
-				}).then(() => {
-					noteEvents.emit(`reacted:${appearNote.id}`, {
-						userId: $i!.id,
-						reaction: reaction,
-					});
-				});
+		}).then(() => {
+			misskeyApi('notes/reactions/create', {
+				noteId: appearNote.id,
+				reaction: reaction,
 			});
+		});
 	} else {
 		sound.playMisskeySfx('reaction');
 		misskeyApi('notes/reactions/create', {
 			noteId: appearNote.id,
 			reaction: reaction,
-		}).then(() => {
-			noteEvents.emit(`reacted:${appearNote.id}`, {
-				userId: $i!.id,
-				reaction: reaction,
-			});
 		});
 	}
 });
