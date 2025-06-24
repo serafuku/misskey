@@ -105,7 +105,7 @@ const alt = computed(() => `:${customEmojiName.value}:`);
 const errored = ref(url.value == null);
 
 function onClick(ev: MouseEvent) {
-	if (props.menu && localEmoji.value) {
+	if (props.menu) {
 		const menuItems: MenuItem[] = [];
 
 		menuItems.push({
@@ -113,7 +113,7 @@ function onClick(ev: MouseEvent) {
 			text: `:${props.name}:`,
 		});
 
-		if (localEmoji.value.name) {
+		if (localEmoji.value) {
 			menuItems.push({
 				text: i18n.ts.copy,
 				icon: 'ti ti-copy',
@@ -123,7 +123,7 @@ function onClick(ev: MouseEvent) {
 			});
 		}
 
-		if (props.menuReaction && react) {
+		if ((props.menuReaction || localEmoji.value) && react) {
 			menuItems.push({
 				text: i18n.ts.doReaction,
 				icon: 'ti ti-plus',
@@ -133,7 +133,7 @@ function onClick(ev: MouseEvent) {
 			});
 		}
 
-		if (localEmoji.value.name) {
+		if (customEmojiName.value || localEmoji.value) {
 			menuItems.push({
 				type: 'divider',
 			}, {
@@ -169,7 +169,7 @@ function onClick(ev: MouseEvent) {
 			});
 		}
 
-		if (($i?.isModerator ?? $i?.isAdmin) && isLocal.value) {
+		if (($i?.isModerator ?? $i?.isAdmin) && localEmoji.value) {
 			menuItems.push({
 				text: i18n.ts.edit,
 				icon: 'ti ti-pencil',
