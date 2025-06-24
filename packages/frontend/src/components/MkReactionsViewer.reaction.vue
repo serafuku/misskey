@@ -125,12 +125,6 @@ async function toggleReaction() {
 		misskeyApi('notes/reactions/create', {
 			noteId: props.noteId,
 			reaction: selected,
-		}).then(() => {
-			noteEvents.emit(`reacted:${props.noteId}`, {
-				userId: $i!.id,
-				reaction: props.reaction,
-				emoji: localEmoji.value,
-			});
 		});
 		// TODO: 上位コンポーネントでやる
 		//if (props.note.text && props.note.text.length > 100 && (Date.now() - new Date(props.note.createdAt).getTime() < 1000 * 3)) {
