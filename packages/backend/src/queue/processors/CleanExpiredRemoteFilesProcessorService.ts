@@ -126,7 +126,11 @@ export class CleanExpiredRemoteFilesProcessorService {
 					userIds.add(file.userId);
 				}
 			}));
-			await Promise.all(files.map(file => this.driveService.deleteFileSync(file, true)));
+			try {
+				await Promise.all(files.map(file => this.driveService.deleteFileSync(file, true)));
+			} catch (e) {
+				this.logger.warn(`deleteFileSync error: ${JSON.stringify(e)}`);
+			}
 
 			deletedCount += 8;
 		}
