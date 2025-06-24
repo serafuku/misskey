@@ -81,10 +81,6 @@ async function toggleReaction() {
 		});
 		if (confirm.canceled) return;
 
-		if (oldReaction !== props.reaction) {
-			sound.playMisskeySfx('reaction');
-		}
-
 		if (mock) {
 			emit('reactionToggled', props.reaction, (props.count - 1));
 			return;
@@ -102,6 +98,12 @@ async function toggleReaction() {
 				misskeyApi('notes/reactions/create', {
 					noteId: props.noteId,
 					reaction: selected,
+				}).then(() => {
+					noteEvents.emit(`reacted:${props.noteId}`, {
+						userId: $i!.id,
+						reaction: selected,
+						emoji: localEmoji.value,
+					});
 				});
 			}
 		});
