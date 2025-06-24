@@ -133,7 +133,7 @@ function onClick(ev: MouseEvent) {
 			});
 		}
 
-		if (customEmojiName.value || localEmoji.value) {
+		if (localEmoji.value) {
 			menuItems.push({
 				type: 'divider',
 			}, {
