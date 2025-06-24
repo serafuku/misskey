@@ -390,7 +390,7 @@ const keymap = {
 } as const satisfies Keymap;
 
 provide(DI.mfmEmojiReactCallback, (reaction) => {
-	if ($appearNote.myReaction) {
+	if (appearNote.myReaction) {
 		sound.playMisskeySfx('reaction');
 		misskeyApi('notes/reactions/delete', {
 			noteId: appearNote.id,
