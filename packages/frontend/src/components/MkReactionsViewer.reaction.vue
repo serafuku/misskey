@@ -153,7 +153,8 @@ async function menu(ev) {
 			action: async () => {
 				const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 					emoji: await misskeyApiGet('emoji', {
-						name: props.reaction.replace(/:/g, '').replace(/@\./, ''),
+						// name: props.reaction.replace(/:/g, '').replace(/@\./, ''),
+						name: emojiNameWithoutHost.value,
 					}),
 				}, {
 					closed: () => dispose(),

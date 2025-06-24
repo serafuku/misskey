@@ -390,16 +390,50 @@ const keymap = {
 } as const satisfies Keymap;
 
 provide(DI.mfmEmojiReactCallback, (reaction) => {
-	sound.playMisskeySfx('reaction');
-	misskeyApi('notes/reactions/create', {
-		noteId: appearNote.id,
-		reaction: reaction,
-	}).then(() => {
-		noteEvents.emit(`reacted:${appearNote.id}`, {
-			userId: $i!.id,
+	if ($appearNote.myReaction) {
+		sound.playMisskeySfx('reaction');
+		misskeyApi('notes/reactions/delete', {
+			noteId: appearNote.id,
+		})
+			.then(() => {
+				noteEvents.emit(`unreacted:${appearNote.id}`, {
+					userId: $i!.id,
+					reaction: reaction,
+				});
+			})
+			.then(() => {
+				misskeyApi('notes/reactions/create', {
+					noteId: appearNote.id,
+					reaction: reaction,
+				}).then(() => {
+					noteEvents.emit(`reacted:${appearNote.id}`, {
+						userId: $i!.id,
+						reaction: reaction,
+					});
+				});
+			});
+	} else {
+		sound.playMisskeySfx('reaction');
+		misskeyApi('notes/reactions/create', {
+			noteId: appearNote.id,
 			reaction: reaction,
+		}).then(() => {
+			noteEvents.emit(`reacted:${appearNote.id}`, {
+				userId: $i!.id,
+				reaction: reaction,
+			});
 		});
-	});
+	}
+	// sound.playMisskeySfx('reaction');
+	// misskeyApi('notes/reactions/create', {
+	// 	noteId: appearNote.id,
+	// 	reaction: reaction,
+	// }).then(() => {
+	// 	noteEvents.emit(`reacted:${appearNote.id}`, {
+	// 		userId: $i!.id,
+	// 		reaction: reaction,
+	// 	});
+	// });
 });
 
 const tab = ref(props.initialTab);
