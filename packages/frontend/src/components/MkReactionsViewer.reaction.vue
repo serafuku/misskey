@@ -93,6 +93,11 @@ async function toggleReaction() {
 		misskeyApi('notes/reactions/delete', {
 			noteId: props.noteId,
 		}).then(() => {
+			noteEvents.emit(`unreacted:${props.noteId}`, {
+				userId: $i!.id,
+				reaction: oldReaction,
+			});
+		}).then(() => {
 			if (oldReaction !== props.reaction) {
 				misskeyApi('notes/reactions/create', {
 					noteId: props.noteId,
