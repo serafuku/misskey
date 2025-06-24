@@ -107,7 +107,8 @@ export class QueueService {
 		this.objectStorageQueue.add('CleanExpiredRemoteFiles', {
 		}, {
 			repeat: { pattern: '0 * * * *' },
-			removeOnComplete: true,
+			removeOnComplete: 10,
+			removeOnFail: 30,
 		});
 
 		this.systemQueue.add('checkExpiredMutings', {
