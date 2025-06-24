@@ -93,20 +93,10 @@ async function toggleReaction() {
 		misskeyApi('notes/reactions/delete', {
 			noteId: props.noteId,
 		}).then(() => {
-			noteEvents.emit(`unreacted:${props.noteId}`, {
-				userId: $i!.id,
-				reaction: oldReaction,
-			});
 			if (oldReaction !== props.reaction) {
 				misskeyApi('notes/reactions/create', {
 					noteId: props.noteId,
 					reaction: selected,
-				}).then(() => {
-					noteEvents.emit(`reacted:${props.noteId}`, {
-						userId: $i!.id,
-						reaction: props.reaction,
-						emoji: localEmoji.value,
-					});
 				});
 			}
 		});
