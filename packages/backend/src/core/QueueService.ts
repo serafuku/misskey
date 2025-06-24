@@ -646,8 +646,14 @@ export class QueueService {
 	@bindThis
 	public createReDownloadRemoteFileJob(fileId: string) {
 		return this.objectStorageQueue.add('ReDownloadRemoteFile', { key: fileId }, {
-			removeOnComplete: true,
-			removeOnFail: true,
+			removeOnComplete: {
+				age: 3600 * 24 * 7, // keep up to 7 days
+				count: 30,
+			},
+			removeOnFail: {
+				age: 3600 * 24 * 7, // keep up to 7 days
+				count: 100,
+			},
 		});
 	}
 
