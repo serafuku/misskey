@@ -399,11 +399,19 @@ provide(DI.mfmEmojiReactCallback, (reaction) => {
 				noteId: appearNote.id,
 				reaction: reaction,
 			});
+			noteEvents.emit(`reacted:${appearNote.id}`, {
+				userId: $i!.id,
+				reaction: reaction,
+			});
 		});
 	} else {
 		sound.playMisskeySfx('reaction');
 		misskeyApi('notes/reactions/create', {
 			noteId: appearNote.id,
+			reaction: reaction,
+		});
+		noteEvents.emit(`reacted:${appearNote.id}`, {
+			userId: $i!.id,
 			reaction: reaction,
 		});
 	}

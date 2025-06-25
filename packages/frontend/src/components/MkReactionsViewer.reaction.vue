@@ -63,14 +63,13 @@ const localEmoji = computed(() => props.reaction.includes(':') ? customEmojisMap
 const canToggle = computed(() => {
 	// TODO
 	//return $i && localEmoji.value && checkReactionPermissions($i, props.note, localEmoji.value);
-	return props.reaction.match(/@\w/) && $i && localEmoji.value;
+	return $i && localEmoji.value;
 });
 const canGetInfo = computed(() => props.reaction.includes(':') && localEmoji.value);
 const isLocalCustomEmoji = props.reaction[0] === ':' && props.reaction.includes('@.');
 
 async function toggleReaction() {
 	if (!canToggle.value) return;
-	if (!localEmoji.value) return;
 
 	const oldReaction = props.myReaction;
 	const selected = props.reaction.includes(':') ? `:${emojiNameWithoutHost.value}:` : props.reaction;

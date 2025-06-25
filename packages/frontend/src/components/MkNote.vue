@@ -84,7 +84,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 					</div>
 					<div v-if="$appearNote.files && $appearNote.files.length > 0" style="margin-top: 8px;">
-						<MkMediaList ref="galleryEl" :mediaList="$appearNote.files"/>
+						<MkMediaList ref="galleryEl" :mediaList="appearNote.files"/>
 					</div>
 					<MkPoll
 						v-if="$appearNote.poll"
@@ -413,11 +413,19 @@ provide(DI.mfmEmojiReactCallback, (reaction) => {
 				noteId: appearNote.id,
 				reaction: reaction,
 			});
+			noteEvents.emit(`reacted:${appearNote.id}`, {
+				userId: $i!.id,
+				reaction: reaction,
+			});
 		});
 	} else {
 		sound.playMisskeySfx('reaction');
 		misskeyApi('notes/reactions/create', {
 			noteId: appearNote.id,
+			reaction: reaction,
+		});
+		noteEvents.emit(`reacted:${appearNote.id}`, {
+			userId: $i!.id,
 			reaction: reaction,
 		});
 	}
