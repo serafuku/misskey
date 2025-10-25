@@ -93,7 +93,7 @@ const POLLING_INTERVAL =
 
 window.setInterval(() => {
 	const ids = [...pollingQueue.entries()]
-		.filter(([k, v]) => Date.now() - v.lastAddedAt < 1000 * 60 * 5) // 追加されてから一定時間経過したものは省く
+		.filter(([k, v]) => Date.now() - v.lastAddedAt < 1000 * 60 * 180) // 追加されてから一定時間経過したものは省く
 		.map(([k, v]) => k)
 		.sort((a, b) => (a > b ? -1 : 1)) // 新しいものを優先するためにIDで降順ソート
 		.slice(0, CAPTURE_MAX);
@@ -240,9 +240,9 @@ export function useNoteCapture(props: {
 	parentNote: Misskey.entities.Note | null;
 	mock?: boolean;
 }): {
-	$note: Reactive<ReactiveNoteData>;
-	subscribe: () => void;
-} {
+		$note: Reactive<ReactiveNoteData>;
+		subscribe: () => void;
+	} {
 	const { note, parentNote, mock } = props;
 
 	const $note = reactive<ReactiveNoteData>({
@@ -295,8 +295,7 @@ export function useNoteCapture(props: {
 		if (
 			reactionUserMap.has(ctx.userId) &&
 			reactionUserMap.get(ctx.userId) === normalizedName
-		)
-			return;
+		) return;
 		reactionUserMap.set(ctx.userId, normalizedName);
 
 		if (ctx.emoji && !(ctx.emoji.name in $note.reactionEmojis)) {
@@ -327,16 +326,14 @@ export function useNoteCapture(props: {
 		if (
 			reactionUserMap.has(ctx.userId) &&
 			reactionUserMap.get(ctx.userId) === noReaction
-		)
-			return;
+		) return;
 		reactionUserMap.set(ctx.userId, noReaction);
 
 		const currentCount = $note.reactions[normalizedName] || 0;
 
 		$note.reactions[normalizedName] = Math.max(0, currentCount - 1);
 		$note.reactionCount = Math.max(0, $note.reactionCount - 1);
-		if ($note.reactions[normalizedName] === 0)
-			delete $note.reactions[normalizedName];
+		if ($note.reactions[normalizedName] === 0) delete $note.reactions[normalizedName];
 
 		if ($i && ctx.userId === $i.id) {
 			$note.myReaction = null;
@@ -357,8 +354,8 @@ export function useNoteCapture(props: {
 			votes: choices[ctx.choice].votes + 1,
 			...($i && ctx.userId === $i.id
 				? {
-						isVoted: true,
-					}
+					isVoted: true,
+				}
 				: {}),
 		};
 
@@ -413,40 +410,11 @@ export function useNoteCapture(props: {
 		noteEvents.off(`pollVoted:${note.id}`, onPollVoted);
 		noteEvents.off(`noteUpdated:${note.id}`, onUpdated);
 	});
-
-	// 投稿からある程度経過している(=タイムラインを遡って表示した)ノートは、イベントが発生する可能性が低いためそもそも購読しない
-	// ただし「リノートされたばかりの過去のノート」(= parentNoteが存在し、かつparentNoteの投稿日時が最近)はイベント発生が考えられるため購読する
-	// TODO: デバイスとサーバーの時計がズレていると不具合の元になるため、ズレを検知して警告を表示するなどのケアが必要かもしれない
-	if (parentNote == null) {
-		if (Date.now() - new Date(note.createdAt).getTime() > 1000 * 60 * 5) {
-			// 5min
-			// リノートで表示されているノートでもないし、投稿からある程度経過しているので自動で購読しない
-			return {
-				$note,
-				subscribe: () => {
-					subscribe();
-				},
-			};
-		}
-	} else {
-		if (Date.now() - new Date(parentNote.createdAt).getTime() > 1000 * 60 * 5) {
-			// 5min
-			// リノートで表示されているノートだが、リノートされてからある程度経過しているので自動で購読しない
-			return {
-				$note,
-				subscribe: () => {
-					subscribe();
-				},
-			};
-		}
-	}
-
 	subscribe();
-
 	return {
 		$note,
 		subscribe: () => {
-			// すでに購読しているので何もしない
+			subscribe();
 		},
 	};
 }
