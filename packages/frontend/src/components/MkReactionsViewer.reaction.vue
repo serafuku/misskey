@@ -58,11 +58,11 @@ const emit = defineEmits<{
 const buttonEl = useTemplateRef('buttonEl');
 
 const emojiName = computed(() => props.reaction.replace(/:/g, '').replace(/@\./, ''));
-const emojiNameWithoutHost = computed(() => emojiName.value.replace(/@[\w.]+/, ''));
+const emojiNameWithoutHost = computed(() => emojiName.value.replace(/@\w.*/, ''));
 const localOrUnicodeEmoji = computed(() => props.reaction.includes(':') ? customEmojisMap.get(emojiNameWithoutHost.value) : getUnicodeEmojiOrNull(props.reaction));
 
 const canToggle = computed(() => {
-	const emoji = customEmojisMap.get(emojiName.value) ?? getUnicodeEmojiOrNull(props.reaction);
+	const emoji = customEmojisMap.get(emojiNameWithoutHost.value) ?? getUnicodeEmojiOrNull(props.reaction);
 	return $i != null && emoji != null;
 });
 const canGetInfo = computed(() => props.reaction.includes(':') && localOrUnicodeEmoji.value);
