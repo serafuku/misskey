@@ -814,7 +814,7 @@ export class ApPersonService implements OnModuleInit {
 	*/
 	@bindThis
 	private async updateFollowCount(person: IActor) {
-		const resolver = this.apResolverService.createResolver();
+		const resolver = await this.apResolverService.createResolver();
 
 		const uri = person.id;
 		if (!uri) return;
