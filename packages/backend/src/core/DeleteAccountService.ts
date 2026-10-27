@@ -48,8 +48,7 @@ export class DeleteAccountService {
 		},
 		moderator?: MiUser,
 	): Promise<void> {
-		if (this.meta.rootUserId === user.id)
-			throw new Error("cannot delete a root account");
+		if (this.meta.rootUserId === user.id) throw new Error('cannot delete a root account');
 
 		const _user = await this.usersRepository.findOneByOrFail({ id: user.id });
 
