@@ -23,7 +23,7 @@ import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerServ
 import { bindThis } from '@/decorators.js';
 import { DB_MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { SearchService } from '@/core/SearchService.js';
-import { normalizeForSearch } from '@/misc/normalize-for-search.js';
+import { normalizeTag } from '@/misc/normalize-tag.js';
 import { MiDriveFile, MiPollVote } from '@/models/_.js';
 import { MiPoll, IPoll } from '@/models/Poll.js';
 import { concat } from '@/misc/prelude/array.js';
@@ -136,7 +136,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 			text: data.text,
 			hasPoll: data.poll != null,
 			cw: data.cw ?? null,
-			tags: tags.map(tag => normalizeForSearch(tag)),
+			tags: tags.map(tag => normalizeTag(tag)),
 			emojis,
 			attachedFileTypes: data.files ? data.files.map(file => file.type) : [],
 		});
