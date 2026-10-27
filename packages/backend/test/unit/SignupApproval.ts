@@ -14,6 +14,8 @@ describe('signup approval state', () => {
 		{ required: true, rootUserId: null, approved: true },
 	])('initializes approval with required=$required, root=$rootUserId', async ({ required, rootUserId, approved }) => {
 		const manager = {
+			// upstream 2026.10.1 added pg_advisory_xact_lock inside the signup transaction
+			query: async () => undefined,
 			findOneBy: async () => null,
 			save: async <T>(entity: T) => entity,
 		};
